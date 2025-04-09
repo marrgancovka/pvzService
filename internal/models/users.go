@@ -12,6 +12,10 @@ const (
 type Users struct {
 	ID       uuid.UUID `json:"id"`
 	Email    string    `json:"email"`
-	Password string    `json:"-"`
-	Roles    Role      `json:"role"`
+	Password string    `json:"password"`
+	Role     Role      `json:"role"`
+}
+
+type DummyLogin struct {
+	Role Role `json:"role"`
 }

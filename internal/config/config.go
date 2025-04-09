@@ -4,10 +4,10 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 	_ "github.com/joho/godotenv/autoload"
 	"go.uber.org/fx"
-	"golang.org/x/oauth2/jwt"
 	"log"
 	"os"
 	"pvzService/internal/pkg/db"
+	"pvzService/internal/pkg/jwter"
 	"pvzService/internal/pkg/server"
 )
 
@@ -16,7 +16,7 @@ type Config struct {
 
 	HTTPServer server.Config `yaml:"httpServer"`
 	DB         db.Config     `yaml:"db"`
-	Jwt        jwt.Config    `yaml:"jwt"`
+	Jwt        jwter.Config  `yaml:"jwt"`
 }
 
 type Out struct {
@@ -24,7 +24,7 @@ type Out struct {
 
 	HTTPServer server.Config
 	DB         db.Config
-	Jwt        jwt.Config
+	Jwt        jwter.Config
 }
 
 func MustLoad() Out {

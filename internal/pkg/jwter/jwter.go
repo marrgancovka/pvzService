@@ -45,7 +45,6 @@ func (jwter *JWTer) GenerateJWT(payload *models.TokenPayload) (*models.Token, er
 
 	tokenResponse := &models.Token{
 		Token: tokenStr,
-		Exp:   expTime,
 	}
 
 	if payload.ID == uuid.Nil {

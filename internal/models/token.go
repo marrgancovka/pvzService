@@ -6,8 +6,7 @@ import (
 )
 
 type Token struct {
-	Token string    `json:"token"`
-	Exp   time.Time `json:"exp"`
+	Token string `json:"token"`
 }
 
 type TokenPayload struct {

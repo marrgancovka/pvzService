@@ -9,11 +9,13 @@ type Params struct {
 	fx.In
 
 	Config Config
+	Router *Router
 }
 
 func RunServer(params Params) {
 	srv := &http.Server{
 		Addr:              params.Config.Address,
+		Handler:           params.Router.handler,
 		ReadHeaderTimeout: params.Config.ReadHeaderTimeout,
 		IdleTimeout:       params.Config.IdleTimeout,
 	}
