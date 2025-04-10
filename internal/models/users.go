@@ -19,3 +19,7 @@ type Users struct {
 type DummyLogin struct {
 	Role Role `json:"role"`
 }
+
+func (r *Role) IsValid() bool {
+	return *r == RoleEmployee || *r == RoleModerator
+}

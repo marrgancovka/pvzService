@@ -1,6 +1,7 @@
 package http
 
 import (
+	"errors"
 	"go.uber.org/fx"
 	"log/slog"
 	"net/http"
@@ -33,19 +34,23 @@ func (h *Handler) DummyLogin(w http.ResponseWriter, r *http.Request) {
 	var role *models.DummyLogin
 
 	if err := reader.ReadRequestData(r, &role); err != nil {
-		responser.SendErr(w, http.StatusBadRequest, "ошибка в чтении данных")
+		responser.SendErr(w, http.StatusBadRequest, auth.ErrBadRequest.Error())
 		return
 	}
 
 	token, err := h.usecase.DummyLogin(r.Context(), role)
 	if err != nil {
-		// TODO: обработка ошибок
-		responser.SendErr(w, http.StatusInternalServerError, err.Error())
-		return
+		switch {
+		case errors.Is(err, auth.ErrIncorrectRole):
+			responser.SendErr(w, http.StatusBadRequest, auth.ErrIncorrectRole.Error())
+			return
+		default:
+			responser.SendErr(w, http.StatusInternalServerError, "internal server error")
+			return
+		}
 	}
 
 	responser.SendOk(w, http.StatusOK, token)
-
 }
 
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
@@ -57,9 +62,14 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 
 	token, err := h.usecase.Login(r.Context(), userData)
 	if err != nil {
-		// TODO: обработка ошибок
-		responser.SendErr(w, http.StatusInternalServerError, err.Error())
-		return
+		switch {
+		case errors.Is(err, auth.ErrUserNotFound) || errors.Is(err, auth.ErrIncorrectData):
+			responser.SendErr(w, http.StatusBadRequest, auth.ErrIncorrectData.Error())
+			return
+		default:
+			responser.SendErr(w, http.StatusInternalServerError, "internal server error")
+			return
+		}
 	}
 	responser.SendOk(w, http.StatusOK, token)
 }
@@ -72,9 +82,17 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 
 	token, err := h.usecase.Register(r.Context(), userData)
 	if err != nil {
-		// TODO: обработка ошибок
-		responser.SendErr(w, http.StatusInternalServerError, err.Error())
-		return
+		switch {
+		case errors.Is(err, auth.ErrAlreadyExists):
+			responser.SendErr(w, http.StatusBadRequest, auth.ErrAlreadyExists.Error())
+			return
+		case errors.Is(err, auth.ErrIncorrectRole):
+			responser.SendErr(w, http.StatusBadRequest, auth.ErrIncorrectRole.Error())
+			return
+		default:
+			responser.SendErr(w, http.StatusInternalServerError, "internal server error")
+			return
+		}
 	}
 	responser.SendOk(w, http.StatusCreated, token)
 }
