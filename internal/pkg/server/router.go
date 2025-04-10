@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 	authHandler "pvzService/internal/services/auth/delivery/http"
+	pvzHandler "pvzService/internal/services/pvz/delivery/http"
 )
 
 type RouterParams struct {
@@ -13,6 +14,7 @@ type RouterParams struct {
 
 	Logger      *slog.Logger
 	AuthHandler *authHandler.Handler
+	PvzHandler  *pvzHandler.Handler
 }
 
 type Router struct {
@@ -27,6 +29,14 @@ func NewRouter(p RouterParams) *Router {
 	v1.HandleFunc("/dummyLogin", p.AuthHandler.DummyLogin).Methods(http.MethodPost, http.MethodOptions)
 	v1.HandleFunc("/register", p.AuthHandler.Register).Methods(http.MethodPost, http.MethodOptions)
 	v1.HandleFunc("/login", p.AuthHandler.Login).Methods(http.MethodPost, http.MethodOptions)
+
+	v1.HandleFunc("/pvz", p.PvzHandler.CreatePvz).Methods(http.MethodPost, http.MethodOptions)
+	v1.HandleFunc("/pvz", p.PvzHandler.GetPvzList).Methods(http.MethodGet, http.MethodOptions)
+	v1.HandleFunc("/pvz/{pvzId}/close_last_reception", p.PvzHandler.CloseLastReception).Methods(http.MethodPost, http.MethodOptions)
+	v1.HandleFunc("/pvz/{pvzId}/delete_last_product", p.PvzHandler.DeleteLastProduct).Methods(http.MethodPost, http.MethodOptions)
+
+	v1.HandleFunc("/receptions", p.PvzHandler.CreateReception).Methods(http.MethodPost, http.MethodOptions)
+	//v1.HandleFunc("/products").Methods(http.MethodPost, http.MethodOptions)
 
 	router := &Router{
 		handler: api,

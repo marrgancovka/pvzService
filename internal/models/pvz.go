@@ -18,3 +18,7 @@ type PVZ struct {
 	RegistrationDate time.Time `json:"registrationDate"`
 	City             City      `json:"city"`
 }
+
+func (citi *City) IsValid() bool {
+	return *citi == CityMoscow || *citi == CitySpb || *citi == CityKazan
+}

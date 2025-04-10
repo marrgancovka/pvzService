@@ -16,6 +16,10 @@ import (
 	authHandler "pvzService/internal/services/auth/delivery/http"
 	authRepository "pvzService/internal/services/auth/repo"
 	authUsecase "pvzService/internal/services/auth/usecase"
+	"pvzService/internal/services/pvz"
+	pvzHandler "pvzService/internal/services/pvz/delivery/http"
+	pvzRepository "pvzService/internal/services/pvz/repo"
+	pvzUsecase "pvzService/internal/services/pvz/usecase"
 	"pvzService/pkg/builder"
 	"pvzService/pkg/logger"
 	"syscall"
@@ -36,6 +40,10 @@ func main() {
 			authHandler.NewHandler,
 			fx.Annotate(authUsecase.NewUsecase, fx.As(new(auth.Usecase))),
 			fx.Annotate(authRepository.NewRepository, fx.As(new(auth.Repository))),
+
+			pvzHandler.NewHandler,
+			fx.Annotate(pvzUsecase.NewUsecase, fx.As(new(pvz.Usecase))),
+			fx.Annotate(pvzRepository.NewRepository, fx.As(new(pvz.Repository))),
 		),
 		fx.WithLogger(func(logger *slog.Logger) fxevent.Logger {
 			return &fxevent.SlogLogger{Logger: logger}

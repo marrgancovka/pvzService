@@ -18,3 +18,11 @@ type Reception struct {
 	PvzID    uuid.UUID     `json:"pvzId"`
 	Status   ReceptionType `json:"status"`
 }
+
+type ReceptionRequest struct {
+	PvzID uuid.UUID `json:"pvzId"`
+}
+
+func (receptionType *ReceptionType) IsValid() bool {
+	return *receptionType == StatusInProgress || *receptionType == StatusClose
+}
