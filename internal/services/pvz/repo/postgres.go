@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/Masterminds/squirrel"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -64,6 +65,7 @@ func (repo *Repository) CreatePvz(ctx context.Context, pvzData *models.PVZ) (*mo
 	return createdPvz, nil
 }
 
+// TODO: исправить?
 func (repo *Repository) CreateReception(ctx context.Context, receptionData *models.Reception) (*models.Reception, error) {
 	tx, err := repo.pool.Begin(ctx)
 	if err != nil {
@@ -90,7 +92,7 @@ func (repo *Repository) CreateReception(ctx context.Context, receptionData *mode
 	}
 	if haveInProgress == 1 {
 		repo.log.Warn("in this pvz open reception already exists")
-		return nil, pvz.ErrOpenReception
+		return nil, pvz.ErrNoOpenReception
 	}
 
 	query, args, err = repo.builder.
@@ -126,4 +128,162 @@ func (repo *Repository) CreateReception(ctx context.Context, receptionData *mode
 	}
 
 	return createdReception, nil
+}
+
+func (repo *Repository) CloseLastReceptions(ctx context.Context, pvzId uuid.UUID) (*models.Reception, error) {
+	query, args, err := repo.builder.
+		Update("receptions").
+		Set("status", models.StatusClose).
+		Where(squirrel.And{
+			squirrel.Eq{"pvz_id": pvzId},
+			squirrel.Eq{"status": models.StatusInProgress},
+		}).
+		Suffix("RETURNING id, date_time, pvz_id, status").
+		ToSql()
+	if err != nil {
+		repo.log.Error("build query error: " + err.Error())
+		return nil, err
+	}
+
+	closedReception := &models.Reception{}
+	if err = repo.pool.QueryRow(ctx, query, args...).Scan(
+		&closedReception.ID,
+		&closedReception.DateTime,
+		&closedReception.PvzID,
+		&closedReception.Status,
+	); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			repo.log.Warn("in this pvz open reception not exists")
+			return nil, pvz.ErrNoClosedReception
+		}
+		repo.log.Error("failed to update status: " + err.Error())
+		return nil, err
+	}
+
+	return closedReception, nil
+}
+
+func (repo *Repository) AddProduct(ctx context.Context, product *models.Product, pvzID uuid.UUID) (*models.Product, error) {
+	tx, err := repo.pool.Begin(ctx)
+	if err != nil {
+		repo.log.Error("failed to begin transaction: " + err.Error())
+		return nil, err
+	}
+	defer tx.Rollback(ctx)
+
+	inProgressReceptionID, err := repo.GetLastInProgressReceptionID(ctx, tx, pvzID)
+	if err != nil {
+		return nil, err
+	}
+
+	query, args, err := repo.builder.
+		Insert("products").
+		Columns("id", "date_time", "type", "reception_id").
+		Values(product.ID, product.DateTime, product.Type, inProgressReceptionID).
+		Suffix("RETURNING id, date_time, type, reception_id").
+		ToSql()
+	if err != nil {
+		repo.log.Error("build query error: " + err.Error())
+		return nil, err
+	}
+
+	if err = tx.QueryRow(ctx, query, args...).Scan(
+		&product.ID,
+		&product.DateTime,
+		&product.Type,
+		&product.ReceptionID,
+	); err != nil {
+		// TODO: errors?
+		repo.log.Error("failed to add product: " + err.Error())
+		return nil, err
+	}
+
+	if err = tx.Commit(ctx); err != nil {
+		repo.log.Error("failed to commit transaction: " + err.Error())
+		return nil, err
+	}
+
+	return product, nil
+}
+
+func (repo *Repository) DeleteLastProduct(ctx context.Context, pvzID uuid.UUID) error {
+	tx, err := repo.pool.Begin(ctx)
+	if err != nil {
+		repo.log.Error("failed to begin transaction: " + err.Error())
+	}
+	defer tx.Rollback(ctx)
+
+	inProgressReceptionID, err := repo.GetLastInProgressReceptionID(ctx, tx, pvzID)
+	if err != nil {
+		return err
+	}
+
+	query, args, err := repo.builder.
+		Select("id").
+		From("products").
+		Where(squirrel.Eq{"reception_id": inProgressReceptionID}).
+		OrderBy("date_time DESC").
+		Limit(1).
+		ToSql()
+	if err != nil {
+		repo.log.Error("build query error: " + err.Error())
+		return err
+	}
+
+	productId := uuid.Nil
+	if err = tx.QueryRow(ctx, query, args...).Scan(&productId); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			repo.log.Warn("нет продуктов в этой приемке")
+			return pvz.ErrNoProduct
+		}
+		repo.log.Error("failed to found product: " + err.Error())
+		return err
+	}
+
+	query, args, err = repo.builder.
+		Delete("products").
+		Where(squirrel.Eq{"id": productId}).
+		ToSql()
+	if err != nil {
+		repo.log.Error("build query error: " + err.Error())
+		return err
+	}
+
+	if _, err = tx.Exec(ctx, query, args...); err != nil {
+		repo.log.Error("failed to delete product: " + err.Error())
+		return err
+	}
+
+	if err = tx.Commit(ctx); err != nil {
+		repo.log.Error("failed to commit transaction: " + err.Error())
+		return err
+	}
+	return nil
+}
+
+func (repo *Repository) GetLastInProgressReceptionID(ctx context.Context, tx pgx.Tx, pvzID uuid.UUID) (uuid.UUID, error) {
+	query, args, err := repo.builder.
+		Select("id").
+		From("receptions").
+		Where(squirrel.And{
+			squirrel.Eq{"pvz_id": pvzID},
+			squirrel.Eq{"status": models.StatusInProgress},
+		}).
+		ToSql()
+	if err != nil {
+		repo.log.Error("failed to build query", "error", err)
+		return uuid.Nil, err
+	}
+
+	var receptionID uuid.UUID
+	if err = tx.QueryRow(ctx, query, args...).Scan(&receptionID); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			repo.log.Warn("no open reception found", "pvz_id", pvzID)
+			return uuid.Nil, pvz.ErrNoOpenReception
+		}
+		repo.log.Error("failed to get open reception", "error", err)
+		return uuid.Nil, err
+	}
+
+	return receptionID, nil
 }

@@ -19,3 +19,12 @@ type Product struct {
 	Type        ProductType `json:"type"`
 	ReceptionID uuid.UUID   `json:"receptionId"`
 }
+
+type ProductRequest struct {
+	Type  ProductType `json:"type"`
+	PvzID uuid.UUID   `json:"pvzId"`
+}
+
+func (productType *ProductType) IsValid() bool {
+	return *productType == TypeElectronics || *productType == TypeClothes || *productType == TypeShoes
+}

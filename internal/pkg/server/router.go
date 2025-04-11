@@ -5,6 +5,7 @@ import (
 	"go.uber.org/fx"
 	"log/slog"
 	"net/http"
+	"pvzService/internal/pkg/middleware"
 	authHandler "pvzService/internal/services/auth/delivery/http"
 	pvzHandler "pvzService/internal/services/pvz/delivery/http"
 )
@@ -25,6 +26,7 @@ func NewRouter(p RouterParams) *Router {
 	api := mux.NewRouter().PathPrefix("/api").Subrouter()
 
 	v1 := api.PathPrefix("/v1").Subrouter()
+	v1.Use(middleware.CORSMiddleware)
 
 	v1.HandleFunc("/dummyLogin", p.AuthHandler.DummyLogin).Methods(http.MethodPost, http.MethodOptions)
 	v1.HandleFunc("/register", p.AuthHandler.Register).Methods(http.MethodPost, http.MethodOptions)
@@ -36,7 +38,7 @@ func NewRouter(p RouterParams) *Router {
 	v1.HandleFunc("/pvz/{pvzId}/delete_last_product", p.PvzHandler.DeleteLastProduct).Methods(http.MethodPost, http.MethodOptions)
 
 	v1.HandleFunc("/receptions", p.PvzHandler.CreateReception).Methods(http.MethodPost, http.MethodOptions)
-	//v1.HandleFunc("/products").Methods(http.MethodPost, http.MethodOptions)
+	v1.HandleFunc("/products", p.PvzHandler.AddProduct).Methods(http.MethodPost, http.MethodOptions)
 
 	router := &Router{
 		handler: api,

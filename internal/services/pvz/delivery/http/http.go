@@ -47,9 +47,43 @@ func (h *Handler) CreatePvz(w http.ResponseWriter, r *http.Request) {
 	responser.SendOk(w, http.StatusCreated, createdPvz)
 }
 
-func (h *Handler) GetPvzList(w http.ResponseWriter, r *http.Request)         {}
-func (h *Handler) CloseLastReception(w http.ResponseWriter, r *http.Request) {}
-func (h *Handler) DeleteLastProduct(w http.ResponseWriter, r *http.Request)  {}
+func (h *Handler) GetPvzList(w http.ResponseWriter, r *http.Request) {}
+
+func (h *Handler) CloseLastReception(w http.ResponseWriter, r *http.Request) {
+	pvzId, err := reader.ReadVarsUUID(r, "pvzId")
+	if err != nil {
+		h.logger.Error("get pvz id err: " + err.Error())
+		responser.SendErr(w, http.StatusBadRequest, "incorrect data")
+		return
+	}
+
+	closedReception, err := h.usecase.CloseLastReceptions(r.Context(), pvzId)
+	if err != nil {
+		// TODO: switch errors
+		responser.SendErr(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	responser.SendOk(w, http.StatusOK, closedReception)
+}
+
+func (h *Handler) DeleteLastProduct(w http.ResponseWriter, r *http.Request) {
+	pvzId, err := reader.ReadVarsUUID(r, "pvzId")
+	if err != nil {
+		h.logger.Error("get pvz id err: " + err.Error())
+		responser.SendErr(w, http.StatusBadRequest, "incorrect id")
+		return
+	}
+
+	err = h.usecase.DeleteLastProduct(r.Context(), pvzId)
+	if err != nil {
+		// TODO: switch errors
+		responser.SendErr(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	responser.SendOk(w, http.StatusOK, "Товар удален")
+}
 
 func (h *Handler) CreateReception(w http.ResponseWriter, r *http.Request) {
 	receptionData := &models.ReceptionRequest{}
@@ -68,4 +102,20 @@ func (h *Handler) CreateReception(w http.ResponseWriter, r *http.Request) {
 	responser.SendOk(w, http.StatusCreated, createdReception)
 }
 
-func (h *Handler) AddProduct(w http.ResponseWriter, r *http.Request) {}
+func (h *Handler) AddProduct(w http.ResponseWriter, r *http.Request) {
+	productData := &models.ProductRequest{}
+	if err := reader.ReadRequestData(r, productData); err != nil {
+		h.logger.Error("create product request err: " + err.Error())
+		responser.SendErr(w, http.StatusBadRequest, "incorrect data")
+		return
+	}
+
+	addedProduct, err := h.usecase.AddProduct(r.Context(), productData)
+	if err != nil {
+		// TODO: switch errors
+		responser.SendErr(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	responser.SendOk(w, http.StatusCreated, addedProduct)
+}

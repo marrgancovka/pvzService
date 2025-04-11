@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"go.uber.org/fx"
 	"net/http"
 )
@@ -20,7 +21,7 @@ func RunServer(params Params) {
 		IdleTimeout:       params.Config.IdleTimeout,
 	}
 	go func() {
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			panic(err)
 		}
 	}()

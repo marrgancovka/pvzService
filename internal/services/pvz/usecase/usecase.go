@@ -70,3 +70,40 @@ func (uc *Usecase) CreateReception(ctx context.Context, receptionData *models.Re
 
 	return createdReception, nil
 }
+
+func (uc *Usecase) CloseLastReceptions(ctx context.Context, pvzId uuid.UUID) (*models.Reception, error) {
+	closedReception, err := uc.repo.CloseLastReceptions(ctx, pvzId)
+	if err != nil {
+		return nil, err
+	}
+	return closedReception, nil
+}
+
+func (uc *Usecase) AddProduct(ctx context.Context, product *models.ProductRequest) (*models.Product, error) {
+	if !product.Type.IsValid() {
+		uc.log.Error("incorrect type for product: " + string(product.Type))
+		return nil, pvz.ErrIncorrectProductType
+	}
+
+	productData := &models.Product{
+		ID:          uuid.New(),
+		DateTime:    time.Now(),
+		Type:        product.Type,
+		ReceptionID: product.PvzID,
+	}
+
+	addedProduct, err := uc.repo.AddProduct(ctx, productData, product.PvzID)
+	if err != nil {
+		return nil, err
+	}
+
+	return addedProduct, nil
+}
+
+func (uc *Usecase) DeleteLastProduct(ctx context.Context, pvzId uuid.UUID) error {
+	err := uc.repo.DeleteLastProduct(ctx, pvzId)
+	if err != nil {
+		return err
+	}
+	return nil
+}
