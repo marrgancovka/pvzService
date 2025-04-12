@@ -15,3 +15,8 @@ type Repository interface {
 	GetUserByEmail(ctx context.Context, email string) (*models.Users, error)
 	CreateUser(ctx context.Context, user *models.Users) (*models.Users, error)
 }
+
+type JWTer interface {
+	GenerateJWT(payload *models.TokenPayload) (*models.Token, error)
+	ValidateJWT(tokenString string) (*models.TokenPayload, error)
+}

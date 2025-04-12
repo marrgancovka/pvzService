@@ -139,3 +139,57 @@ func (mr *MockRepositoryMockRecorder) GetUserByEmail(ctx, email any) *gomock.Cal
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByEmail", reflect.TypeOf((*MockRepository)(nil).GetUserByEmail), ctx, email)
 }
+
+// MockJWTer is a mock of JWTer interface.
+type MockJWTer struct {
+	ctrl     *gomock.Controller
+	recorder *MockJWTerMockRecorder
+	isgomock struct{}
+}
+
+// MockJWTerMockRecorder is the mock recorder for MockJWTer.
+type MockJWTerMockRecorder struct {
+	mock *MockJWTer
+}
+
+// NewMockJWTer creates a new mock instance.
+func NewMockJWTer(ctrl *gomock.Controller) *MockJWTer {
+	mock := &MockJWTer{ctrl: ctrl}
+	mock.recorder = &MockJWTerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockJWTer) EXPECT() *MockJWTerMockRecorder {
+	return m.recorder
+}
+
+// GenerateJWT mocks base method.
+func (m *MockJWTer) GenerateJWT(payload *models.TokenPayload) (*models.Token, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GenerateJWT", payload)
+	ret0, _ := ret[0].(*models.Token)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GenerateJWT indicates an expected call of GenerateJWT.
+func (mr *MockJWTerMockRecorder) GenerateJWT(payload any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateJWT", reflect.TypeOf((*MockJWTer)(nil).GenerateJWT), payload)
+}
+
+// ValidateJWT mocks base method.
+func (m *MockJWTer) ValidateJWT(tokenString string) (*models.TokenPayload, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ValidateJWT", tokenString)
+	ret0, _ := ret[0].(*models.TokenPayload)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ValidateJWT indicates an expected call of ValidateJWT.
+func (mr *MockJWTerMockRecorder) ValidateJWT(tokenString any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateJWT", reflect.TypeOf((*MockJWTer)(nil).ValidateJWT), tokenString)
+}

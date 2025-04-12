@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/google/uuid"
 	"github.com/marrgancovka/pvzService/internal/models"
-	"github.com/marrgancovka/pvzService/internal/pkg/jwter"
 	"github.com/marrgancovka/pvzService/internal/services/pvz"
 	"go.uber.org/fx"
 	"log/slog"
@@ -16,20 +15,17 @@ type Params struct {
 
 	Logger *slog.Logger
 	Repo   pvz.Repository
-	JWTer  *jwter.JWTer
 }
 
 type Usecase struct {
-	log   *slog.Logger
-	repo  pvz.Repository
-	JWTer *jwter.JWTer
+	log  *slog.Logger
+	repo pvz.Repository
 }
 
 func NewUsecase(p Params) *Usecase {
 	return &Usecase{
-		log:   p.Logger,
-		repo:  p.Repo,
-		JWTer: p.JWTer,
+		log:  p.Logger,
+		repo: p.Repo,
 	}
 }
 

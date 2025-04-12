@@ -17,13 +17,13 @@ type Params struct {
 
 	Logger *slog.Logger
 	Repo   auth.Repository
-	JWTer  *jwter.JWTer
+	JWTer  auth.JWTer
 }
 
 type Usecase struct {
 	log  *slog.Logger
 	repo auth.Repository
-	jwt  *jwter.JWTer
+	jwt  auth.JWTer
 }
 
 func NewUsecase(p Params) *Usecase {

@@ -33,7 +33,7 @@ func main() {
 			builder.SetupBuilder,
 			server.NewRouter,
 			config.MustLoad,
-			jwter.New,
+			fx.Annotate(jwter.New, fx.As(new(auth.JWTer))),
 
 			middleware.NewAuthMiddleware,
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/marrgancovka/pvzService/internal/pkg/jwter"
+	"github.com/marrgancovka/pvzService/internal/services/auth"
 	"github.com/marrgancovka/pvzService/pkg/responser"
 	"go.uber.org/fx"
 	"net/http"
@@ -15,16 +16,16 @@ const RoleInContext string = "RoleInContext"
 type AuthMiddlewareParams struct {
 	fx.In
 
-	JWTer *jwter.JWTer
+	JWTer auth.JWTer
 }
 
 type AuthMiddleware struct {
-	jwt *jwter.JWTer
+	jwt auth.JWTer
 }
 
-func NewAuthMiddleware(jwter *jwter.JWTer) *AuthMiddleware {
+func NewAuthMiddleware(p AuthMiddlewareParams) *AuthMiddleware {
 	return &AuthMiddleware{
-		jwt: jwter,
+		jwt: p.JWTer,
 	}
 }
 
