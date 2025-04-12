@@ -3,11 +3,11 @@ package usecase
 import (
 	"context"
 	"github.com/google/uuid"
+	"github.com/marrgancovka/pvzService/internal/models"
+	"github.com/marrgancovka/pvzService/internal/pkg/jwter"
+	"github.com/marrgancovka/pvzService/internal/services/pvz"
 	"go.uber.org/fx"
 	"log/slog"
-	"pvzService/internal/models"
-	"pvzService/internal/pkg/jwter"
-	"pvzService/internal/services/pvz"
 	"time"
 )
 

@@ -2,7 +2,7 @@ package auth
 
 import (
 	"context"
-	"pvzService/internal/models"
+	"github.com/marrgancovka/pvzService/internal/models"
 )
 
 type Usecase interface {

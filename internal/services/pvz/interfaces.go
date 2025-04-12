@@ -3,7 +3,7 @@ package pvz
 import (
 	"context"
 	"github.com/google/uuid"
-	"pvzService/internal/models"
+	"github.com/marrgancovka/pvzService/internal/models"
 	"time"
 )
 

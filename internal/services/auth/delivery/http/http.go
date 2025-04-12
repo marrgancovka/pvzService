@@ -2,13 +2,13 @@ package http
 
 import (
 	"errors"
+	"github.com/marrgancovka/pvzService/internal/models"
+	"github.com/marrgancovka/pvzService/internal/services/auth"
+	"github.com/marrgancovka/pvzService/pkg/reader"
+	"github.com/marrgancovka/pvzService/pkg/responser"
 	"go.uber.org/fx"
 	"log/slog"
 	"net/http"
-	"pvzService/internal/models"
-	"pvzService/internal/services/auth"
-	"pvzService/pkg/reader"
-	"pvzService/pkg/responser"
 )
 
 type Params struct {

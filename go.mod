@@ -1,4 +1,4 @@
-module pvzService
+module github.com/marrgancovka/pvzService
 
 go 1.24
 

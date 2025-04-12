@@ -7,10 +7,10 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/marrgancovka/pvzService/internal/models"
+	"github.com/marrgancovka/pvzService/internal/services/auth"
 	"go.uber.org/fx"
 	"log/slog"
-	"pvzService/internal/models"
-	"pvzService/internal/services/auth"
 )
 
 type Params struct {

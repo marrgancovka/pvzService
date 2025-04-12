@@ -3,12 +3,12 @@ package config
 import (
 	"github.com/ilyakaznacheev/cleanenv"
 	_ "github.com/joho/godotenv/autoload"
+	"github.com/marrgancovka/pvzService/internal/pkg/db"
+	"github.com/marrgancovka/pvzService/internal/pkg/jwter"
+	"github.com/marrgancovka/pvzService/internal/pkg/server"
 	"go.uber.org/fx"
 	"log"
 	"os"
-	"pvzService/internal/pkg/db"
-	"pvzService/internal/pkg/jwter"
-	"pvzService/internal/pkg/server"
 )
 
 type Config struct {

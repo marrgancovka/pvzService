@@ -2,14 +2,14 @@ package http
 
 import (
 	"fmt"
+	"github.com/marrgancovka/pvzService/internal/models"
+	"github.com/marrgancovka/pvzService/internal/pkg/middleware"
+	"github.com/marrgancovka/pvzService/internal/services/pvz"
+	"github.com/marrgancovka/pvzService/pkg/reader"
+	"github.com/marrgancovka/pvzService/pkg/responser"
 	"go.uber.org/fx"
 	"log/slog"
 	"net/http"
-	"pvzService/internal/models"
-	"pvzService/internal/pkg/middleware"
-	"pvzService/internal/services/pvz"
-	"pvzService/pkg/reader"
-	"pvzService/pkg/responser"
 	"strconv"
 	"time"
 )

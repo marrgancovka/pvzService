@@ -4,12 +4,12 @@ import (
 	"context"
 	"errors"
 	"github.com/google/uuid"
+	"github.com/marrgancovka/pvzService/internal/models"
+	"github.com/marrgancovka/pvzService/internal/pkg/jwter"
+	"github.com/marrgancovka/pvzService/internal/services/auth"
+	"github.com/marrgancovka/pvzService/pkg/hasher"
 	"go.uber.org/fx"
 	"log/slog"
-	"pvzService/internal/models"
-	"pvzService/internal/pkg/jwter"
-	"pvzService/internal/services/auth"
-	"pvzService/pkg/hasher"
 )
 
 type Params struct {

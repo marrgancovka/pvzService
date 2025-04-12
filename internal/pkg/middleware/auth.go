@@ -3,10 +3,10 @@ package middleware
 import (
 	"context"
 	"errors"
+	"github.com/marrgancovka/pvzService/internal/pkg/jwter"
+	"github.com/marrgancovka/pvzService/pkg/responser"
 	"go.uber.org/fx"
 	"net/http"
-	"pvzService/internal/pkg/jwter"
-	"pvzService/pkg/responser"
 	"strings"
 )
 

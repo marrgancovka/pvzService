@@ -2,12 +2,12 @@ package server
 
 import (
 	"github.com/gorilla/mux"
+	"github.com/marrgancovka/pvzService/internal/pkg/middleware"
+	authHandler "github.com/marrgancovka/pvzService/internal/services/auth/delivery/http"
+	pvzHandler "github.com/marrgancovka/pvzService/internal/services/pvz/delivery/http"
 	"go.uber.org/fx"
 	"log/slog"
 	"net/http"
-	"pvzService/internal/pkg/middleware"
-	authHandler "pvzService/internal/services/auth/delivery/http"
-	pvzHandler "pvzService/internal/services/pvz/delivery/http"
 )
 
 type RouterParams struct {
