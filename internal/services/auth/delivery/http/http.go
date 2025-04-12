@@ -37,6 +37,10 @@ func (h *Handler) DummyLogin(w http.ResponseWriter, r *http.Request) {
 		responser.SendErr(w, http.StatusBadRequest, auth.ErrBadRequest.Error())
 		return
 	}
+	if role == nil {
+		responser.SendErr(w, http.StatusBadRequest, auth.ErrBadRequest.Error())
+		return
+	}
 
 	token, err := h.usecase.DummyLogin(r.Context(), role)
 	if err != nil {
@@ -56,7 +60,11 @@ func (h *Handler) DummyLogin(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	userData := &models.Users{}
 	if err := reader.ReadRequestData(r, userData); err != nil {
-		responser.SendErr(w, http.StatusBadRequest, "ошибка в чтении данных")
+		responser.SendErr(w, http.StatusBadRequest, auth.ErrBadRequest.Error())
+		return
+	}
+	if userData.Email == "" || userData.Password == "" {
+		responser.SendErr(w, http.StatusBadRequest, auth.ErrBadRequest.Error())
 		return
 	}
 
@@ -73,10 +81,15 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 	responser.SendOk(w, http.StatusOK, token)
 }
+
 func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 	userData := &models.Users{}
 	if err := reader.ReadRequestData(r, userData); err != nil {
 		responser.SendErr(w, http.StatusBadRequest, "ошибка в чтении данных")
+		return
+	}
+	if userData.Email == "" || userData.Password == "" || userData.Role == "" {
+		responser.SendErr(w, http.StatusBadRequest, auth.ErrBadRequest.Error())
 		return
 	}
 
