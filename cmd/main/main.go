@@ -10,6 +10,7 @@ import (
 	"pvzService/internal/config"
 	"pvzService/internal/pkg/db"
 	"pvzService/internal/pkg/jwter"
+	"pvzService/internal/pkg/middleware"
 	"pvzService/internal/pkg/migrations"
 	"pvzService/internal/pkg/server"
 	"pvzService/internal/services/auth"
@@ -33,6 +34,8 @@ func main() {
 			server.NewRouter,
 			config.MustLoad,
 			jwter.New,
+
+			middleware.NewAuthMiddleware,
 
 			db.NewPostgresPool,
 			db.NewPostgresConnect,
@@ -67,3 +70,17 @@ func main() {
 	<-stop
 	app.Stop(ctx)
 }
+
+// TODO: получение пвз
+// TODO: тесты 75%
+// TODO: интеграционный тест
+// TODO: gRPC метод получения пвз
+// TODO: добавить прометеус
+
+// TODO: проверить логирование
+// TODO: добавить dockerfile + prod.docker-compose + логирование в файл
+// TODO: написать makefile
+// TODO: написать readme
+// TODO: проверить ошибки
+// TODO: добавить нужные константы
+// TODO: линтер

@@ -25,6 +25,11 @@ type ProductRequest struct {
 	PvzID uuid.UUID   `json:"pvzId"`
 }
 
-func (productType *ProductType) IsValid() bool {
-	return *productType == TypeElectronics || *productType == TypeClothes || *productType == TypeShoes
+func (productType ProductType) IsValid() bool {
+	switch productType {
+	case TypeShoes, TypeElectronics, TypeClothes:
+		return true
+	default:
+		return false
+	}
 }

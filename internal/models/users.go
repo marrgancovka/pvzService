@@ -20,6 +20,11 @@ type DummyLogin struct {
 	Role Role `json:"role"`
 }
 
-func (r *Role) IsValid() bool {
-	return *r == RoleEmployee || *r == RoleModerator
+func (role Role) IsValid() bool {
+	switch role {
+	case RoleModerator, RoleEmployee:
+		return true
+	default:
+		return false
+	}
 }

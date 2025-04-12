@@ -33,7 +33,7 @@ func NewUsecase(p Params) *Usecase {
 	}
 }
 
-func (uc *Usecase) CreatePvz(ctx context.Context, pvzData *models.PVZ) (*models.PVZ, error) {
+func (uc *Usecase) CreatePvz(ctx context.Context, pvzData *models.Pvz) (*models.Pvz, error) {
 	if !pvzData.City.IsValid() {
 		uc.log.Error("incorrect city: " + string(pvzData.City))
 		return nil, pvz.ErrInaccessibleCity
@@ -44,7 +44,7 @@ func (uc *Usecase) CreatePvz(ctx context.Context, pvzData *models.PVZ) (*models.
 	}
 	nilTime := time.Time{}
 	if pvzData.RegistrationDate == nilTime {
-		uc.log.Error("create pvz: registration date is nil")
+		uc.log.Warn("create pvz: registration date is nil")
 		pvzData.RegistrationDate = time.Now()
 	}
 
@@ -106,4 +106,8 @@ func (uc *Usecase) DeleteLastProduct(ctx context.Context, pvzId uuid.UUID) error
 		return err
 	}
 	return nil
+}
+
+func (uc *Usecase) GetPvz(ctx context.Context, startDate, endDate time.Time, limit, page uint64) (*models.Pvz, error) {
+	return uc.repo.GetPvz(ctx, startDate, endDate, limit, page)
 }

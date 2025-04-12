@@ -23,6 +23,11 @@ type ReceptionRequest struct {
 	PvzID uuid.UUID `json:"pvzId"`
 }
 
-func (receptionType *ReceptionType) IsValid() bool {
-	return *receptionType == StatusInProgress || *receptionType == StatusClose
+func (receptionType ReceptionType) IsValid() bool {
+	switch receptionType {
+	case StatusInProgress, StatusClose:
+		return true
+	default:
+		return false
+	}
 }

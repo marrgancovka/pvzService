@@ -13,12 +13,24 @@ const (
 	CityKazan  City = "Казань"
 )
 
-type PVZ struct {
+type Pvz struct {
 	ID               uuid.UUID `json:"id"`
 	RegistrationDate time.Time `json:"registrationDate"`
 	City             City      `json:"city"`
 }
 
-func (citi *City) IsValid() bool {
-	return *citi == CityMoscow || *citi == CitySpb || *citi == CityKazan
+type Pagination struct {
+	StartDate string
+	EndDate   string
+	PageNum   uint64
+	Limit     uint64
+}
+
+func (city City) IsValid() bool {
+	switch city {
+	case CitySpb, CityMoscow, CityKazan:
+		return true
+	default:
+		return false
+	}
 }

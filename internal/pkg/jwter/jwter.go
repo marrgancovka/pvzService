@@ -81,9 +81,9 @@ func (jwter *JWTer) ValidateJWT(tokenString string) (*models.TokenPayload, error
 		return nil, ErrInvalidTokenClaims
 	}
 
-	role, ok := claims["role"].(models.Role)
+	role, ok := claims["role"].(string)
 	if !ok {
-		jwter.log.Error("jwt validate: invalid role")
+		jwter.log.Error("jwt validate: invalid role: " + claims["role"].(string))
 		return nil, ErrInvalidTokenClaims
 	}
 
@@ -101,7 +101,7 @@ func (jwter *JWTer) ValidateJWT(tokenString string) (*models.TokenPayload, error
 
 	payload := &models.TokenPayload{
 		ID:   id,
-		Role: role,
+		Role: models.Role(role),
 		Exp:  expTime,
 	}
 

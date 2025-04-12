@@ -13,9 +13,10 @@ import (
 type RouterParams struct {
 	fx.In
 
-	Logger      *slog.Logger
-	AuthHandler *authHandler.Handler
-	PvzHandler  *pvzHandler.Handler
+	Logger         *slog.Logger
+	AuthHandler    *authHandler.Handler
+	PvzHandler     *pvzHandler.Handler
+	AuthMiddleware *middleware.AuthMiddleware
 }
 
 type Router struct {
@@ -24,21 +25,27 @@ type Router struct {
 
 func NewRouter(p RouterParams) *Router {
 	api := mux.NewRouter().PathPrefix("/api").Subrouter()
+	api.Use(middleware.CORSMiddleware)
 
 	v1 := api.PathPrefix("/v1").Subrouter()
-	v1.Use(middleware.CORSMiddleware)
-
 	v1.HandleFunc("/dummyLogin", p.AuthHandler.DummyLogin).Methods(http.MethodPost, http.MethodOptions)
 	v1.HandleFunc("/register", p.AuthHandler.Register).Methods(http.MethodPost, http.MethodOptions)
 	v1.HandleFunc("/login", p.AuthHandler.Login).Methods(http.MethodPost, http.MethodOptions)
 
-	v1.HandleFunc("/pvz", p.PvzHandler.CreatePvz).Methods(http.MethodPost, http.MethodOptions)
-	v1.HandleFunc("/pvz", p.PvzHandler.GetPvzList).Methods(http.MethodGet, http.MethodOptions)
-	v1.HandleFunc("/pvz/{pvzId}/close_last_reception", p.PvzHandler.CloseLastReception).Methods(http.MethodPost, http.MethodOptions)
-	v1.HandleFunc("/pvz/{pvzId}/delete_last_product", p.PvzHandler.DeleteLastProduct).Methods(http.MethodPost, http.MethodOptions)
+	pvz := v1.PathPrefix("/pvz").Subrouter()
+	pvz.Use(p.AuthMiddleware.AuthMiddleware)
+	pvz.HandleFunc("", p.PvzHandler.CreatePvz).Methods(http.MethodPost, http.MethodOptions)
+	pvz.HandleFunc("", p.PvzHandler.GetPvzList).Methods(http.MethodGet, http.MethodOptions)
+	pvz.HandleFunc("/{pvzId}/close_last_reception", p.PvzHandler.CloseLastReception).Methods(http.MethodPost, http.MethodOptions)
+	pvz.HandleFunc("/{pvzId}/delete_last_product", p.PvzHandler.DeleteLastProduct).Methods(http.MethodPost, http.MethodOptions)
 
-	v1.HandleFunc("/receptions", p.PvzHandler.CreateReception).Methods(http.MethodPost, http.MethodOptions)
-	v1.HandleFunc("/products", p.PvzHandler.AddProduct).Methods(http.MethodPost, http.MethodOptions)
+	reception := v1.PathPrefix("/receptions").Subrouter()
+	reception.Use(p.AuthMiddleware.AuthMiddleware)
+	reception.HandleFunc("/receptions", p.PvzHandler.CreateReception).Methods(http.MethodPost, http.MethodOptions)
+
+	product := v1.PathPrefix("/products").Subrouter()
+	product.Use(p.AuthMiddleware.AuthMiddleware)
+	product.HandleFunc("", p.PvzHandler.AddProduct).Methods(http.MethodPost, http.MethodOptions)
 
 	router := &Router{
 		handler: api,

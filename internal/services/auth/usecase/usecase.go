@@ -21,16 +21,16 @@ type Params struct {
 }
 
 type Usecase struct {
-	log   *slog.Logger
-	repo  auth.Repository
-	JWTer *jwter.JWTer
+	log  *slog.Logger
+	repo auth.Repository
+	jwt  *jwter.JWTer
 }
 
 func NewUsecase(p Params) *Usecase {
 	return &Usecase{
-		log:   p.Logger,
-		repo:  p.Repo,
-		JWTer: p.JWTer,
+		log:  p.Logger,
+		repo: p.Repo,
+		jwt:  p.JWTer,
 	}
 }
 
@@ -42,7 +42,7 @@ func (uc *Usecase) DummyLogin(ctx context.Context, role *models.DummyLogin) (str
 
 	tokenPayload := &models.TokenPayload{Role: role.Role}
 
-	token, err := uc.JWTer.GenerateJWT(tokenPayload)
+	token, err := uc.jwt.GenerateJWT(tokenPayload)
 	if err != nil && !errors.Is(err, jwter.ErrNoID) {
 		return "", err
 	}
@@ -63,7 +63,7 @@ func (uc *Usecase) Login(ctx context.Context, userData *models.Users) (string, e
 		ID:   user.ID,
 		Role: user.Role,
 	}
-	token, err := uc.JWTer.GenerateJWT(tokenPayload)
+	token, err := uc.jwt.GenerateJWT(tokenPayload)
 	if err != nil {
 		return "", err
 	}
@@ -85,7 +85,7 @@ func (uc *Usecase) Register(ctx context.Context, userData *models.Users) (string
 		ID:   newUser.ID,
 		Role: newUser.Role,
 	}
-	token, err := uc.JWTer.GenerateJWT(tokenPayload)
+	token, err := uc.jwt.GenerateJWT(tokenPayload)
 	if err != nil {
 		return "", err
 	}
