@@ -32,10 +32,13 @@ func NewRouter(p RouterParams) *Router {
 	v1.HandleFunc("/register", p.AuthHandler.Register).Methods(http.MethodPost, http.MethodOptions)
 	v1.HandleFunc("/login", p.AuthHandler.Login).Methods(http.MethodPost, http.MethodOptions)
 
+	pvzGrpc := v1.PathPrefix("/pvzGrpc").Subrouter()
+	pvzGrpc.HandleFunc("", p.PvzHandler.GetPvzList).Methods(http.MethodGet, http.MethodOptions)
+
 	pvz := v1.PathPrefix("/pvz").Subrouter()
 	pvz.Use(p.AuthMiddleware.AuthMiddleware)
 	pvz.HandleFunc("", p.PvzHandler.CreatePvz).Methods(http.MethodPost, http.MethodOptions)
-	pvz.HandleFunc("", p.PvzHandler.GetPvzList).Methods(http.MethodGet, http.MethodOptions)
+	pvz.HandleFunc("", p.PvzHandler.GetPvzs).Methods(http.MethodGet, http.MethodOptions)
 	pvz.HandleFunc("/{pvzId}/close_last_reception", p.PvzHandler.CloseLastReception).Methods(http.MethodPost, http.MethodOptions)
 	pvz.HandleFunc("/{pvzId}/delete_last_product", p.PvzHandler.DeleteLastProduct).Methods(http.MethodPost, http.MethodOptions)
 

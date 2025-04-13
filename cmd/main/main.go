@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/marrgancovka/pvzService/internal/config"
 	"github.com/marrgancovka/pvzService/internal/pkg/db"
+	"github.com/marrgancovka/pvzService/internal/pkg/grpcconn"
 	"github.com/marrgancovka/pvzService/internal/pkg/jwter"
 	"github.com/marrgancovka/pvzService/internal/pkg/middleware"
 	"github.com/marrgancovka/pvzService/internal/pkg/migrations"
@@ -32,8 +33,13 @@ func main() {
 			logger.SetupLogger,
 			builder.SetupBuilder,
 			server.NewRouter,
+			func() config.ConfigPath {
+				return "config/main/config.yaml"
+			},
 			config.MustLoad,
 			fx.Annotate(jwter.New, fx.As(new(auth.JWTer))),
+
+			grpcconn.Provide,
 
 			middleware.NewAuthMiddleware,
 
@@ -72,7 +78,6 @@ func main() {
 }
 
 // TODO: получение пвз
-// TODO: тесты 75%
 // TODO: интеграционный тест
 // TODO: gRPC метод получения пвз
 // TODO: добавить прометеус

@@ -386,3 +386,37 @@ func (repo *Repository) GetPvz(ctx context.Context, startDate, endDate time.Time
 	}
 	return nil, nil
 }
+
+func (repo *Repository) GetPvzList(ctx context.Context) ([]*models.Pvz, error) {
+	const op = "pvz.Repository.GetPvzList"
+	repo.log = repo.log.With("op", op)
+
+	query, _, err := repo.builder.
+		Select("id", "registration_date", "city").
+		From("pvz").
+		OrderBy("registration_date").
+		ToSql()
+	if err != nil {
+		repo.log.Error("failed to build query: " + err.Error())
+		return nil, err
+	}
+
+	rows, err := repo.pool.Query(ctx, query)
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		repo.log.Error("failed to execute query: " + err.Error())
+		return nil, err
+	}
+	defer rows.Close()
+
+	var results []*models.Pvz
+	for rows.Next() {
+		row := &models.Pvz{}
+		if err = rows.Scan(&row.ID, &row.RegistrationDate, &row.City); err != nil {
+			repo.log.Error("failed to scan row: " + err.Error())
+			return nil, err
+		}
+		results = append(results, row)
+	}
+
+	return results, nil
+}

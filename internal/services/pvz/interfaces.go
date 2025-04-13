@@ -14,6 +14,7 @@ type Usecase interface {
 	AddProduct(ctx context.Context, product *models.ProductRequest) (*models.Product, error)
 	DeleteLastProduct(ctx context.Context, pvzId uuid.UUID) error
 	GetPvz(ctx context.Context, startDate, endDate time.Time, limit, page uint64) (*models.Pvz, error)
+	GetPvzList(ctx context.Context) ([]*models.Pvz, error)
 }
 
 type Repository interface {
@@ -23,4 +24,5 @@ type Repository interface {
 	AddProduct(ctx context.Context, product *models.Product, pvzID uuid.UUID) (*models.Product, error)
 	DeleteLastProduct(ctx context.Context, pvzId uuid.UUID) error
 	GetPvz(ctx context.Context, startDate, endDate time.Time, limit, page uint64) (*models.Pvz, error)
+	GetPvzList(ctx context.Context) ([]*models.Pvz, error)
 }

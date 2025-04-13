@@ -127,3 +127,10 @@ func (uc *Usecase) GetPvz(ctx context.Context, startDate, endDate time.Time, lim
 
 	return uc.repo.GetPvz(ctx, startDate, endDate, limit, page)
 }
+
+func (uc *Usecase) GetPvzList(ctx context.Context) ([]*models.Pvz, error) {
+	const op = "pvz.Usecase.GetPvzList"
+	uc.log = uc.log.With("op", op)
+
+	return uc.repo.GetPvzList(ctx)
+}

@@ -3,6 +3,7 @@ package server
 import (
 	"errors"
 	"go.uber.org/fx"
+	"log/slog"
 	"net/http"
 )
 
@@ -11,6 +12,7 @@ type Params struct {
 
 	Config Config
 	Router *Router
+	Logger *slog.Logger
 }
 
 func RunServer(params Params) {
@@ -21,6 +23,7 @@ func RunServer(params Params) {
 		IdleTimeout:       params.Config.IdleTimeout,
 	}
 	go func() {
+		params.Logger.Info("starting server", "address", srv.Addr)
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			panic(err)
 		}

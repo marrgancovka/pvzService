@@ -7,9 +7,11 @@ import (
 	"github.com/marrgancovka/pvzService/internal/models"
 	"github.com/marrgancovka/pvzService/internal/pkg/middleware"
 	"github.com/marrgancovka/pvzService/internal/services/pvz"
+	"github.com/marrgancovka/pvzService/internal/services/pvz/delivery/grpc/gen"
 	"github.com/marrgancovka/pvzService/pkg/reader"
 	"github.com/marrgancovka/pvzService/pkg/responser"
 	"go.uber.org/fx"
+	"google.golang.org/grpc"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -19,19 +21,22 @@ import (
 type Params struct {
 	fx.In
 
-	Logger  *slog.Logger
-	Usecase pvz.Usecase
+	Logger     *slog.Logger
+	Usecase    pvz.Usecase
+	GRPCClient *grpc.ClientConn
 }
 
 type Handler struct {
-	logger  *slog.Logger
-	usecase pvz.Usecase
+	logger     *slog.Logger
+	usecase    pvz.Usecase
+	grpcClient gen.PVZServiceClient
 }
 
 func NewHandler(params Params) *Handler {
 	return &Handler{
-		logger:  params.Logger,
-		usecase: params.Usecase,
+		grpcClient: gen.NewPVZServiceClient(params.GRPCClient),
+		logger:     params.Logger,
+		usecase:    params.Usecase,
 	}
 }
 
@@ -71,7 +76,7 @@ func (h *Handler) CreatePvz(w http.ResponseWriter, r *http.Request) {
 	responser.SendOk(w, http.StatusCreated, createdPvz)
 }
 
-func (h *Handler) GetPvzList(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetPvzs(w http.ResponseWriter, r *http.Request) {
 	const op = "pvz.Handler.GetPvzList"
 	h.logger = h.logger.With("op", op)
 
@@ -287,6 +292,22 @@ func (h *Handler) AddProduct(w http.ResponseWriter, r *http.Request) {
 	responser.SendOk(w, http.StatusCreated, addedProduct)
 }
 
+func (h *Handler) GetPvzList(w http.ResponseWriter, r *http.Request) {
+	list, err := h.grpcClient.GetPVZList(r.Context(), &gen.GetPVZListRequest{})
+	if err != nil {
+		h.logger.Error("error get pvz list: " + err.Error())
+		responser.SendErr(w, http.StatusInternalServerError, "internal server error")
+	}
+
+	result := make([]*models.Pvz, len(list.Pvzs))
+	for i := range list.Pvzs {
+		result[i] = convert(list.Pvzs[i])
+	}
+
+	h.logger.Info("success get pvz list on grpc", "response", result)
+	responser.SendOk(w, http.StatusOK, result)
+}
+
 func parseDate(dateStr string) (time.Time, error) {
 	formats := []string{
 		time.RFC3339,
@@ -301,4 +322,17 @@ func parseDate(dateStr string) (time.Time, error) {
 	}
 
 	return time.Time{}, fmt.Errorf("unrecognized date format")
+}
+
+func convert(pvz *gen.PVZ) *models.Pvz {
+	pvzUUID, err := uuid.Parse(pvz.Id)
+	if err != nil {
+		return nil
+	}
+
+	return &models.Pvz{
+		ID:               pvzUUID,
+		RegistrationDate: pvz.RegistrationDate.AsTime(),
+		City:             models.City(pvz.City),
+	}
 }
