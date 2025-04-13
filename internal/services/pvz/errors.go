@@ -10,4 +10,6 @@ var (
 	ErrPvzNotExists         = errors.New("pvz does not exist")
 	ErrIncorrectProductType = errors.New("incorrect product type")
 	ErrNoProduct            = errors.New("no product found")
+	ErrNoAccess             = errors.New("no access")
+	ErrBadRequest           = errors.New("bad request")
 )

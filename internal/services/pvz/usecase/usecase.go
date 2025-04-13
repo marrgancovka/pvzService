@@ -30,17 +30,22 @@ func NewUsecase(p Params) *Usecase {
 }
 
 func (uc *Usecase) CreatePvz(ctx context.Context, pvzData *models.Pvz) (*models.Pvz, error) {
+	const op = "pvz.Usecase.CreatePvz"
+	uc.log = uc.log.With("op", op)
+
 	if !pvzData.City.IsValid() {
 		uc.log.Error("incorrect city: " + string(pvzData.City))
 		return nil, pvz.ErrInaccessibleCity
 	}
+
 	if pvzData.ID == uuid.Nil {
-		uc.log.Warn("create pvz: id is nil")
+		uc.log.Warn("id in pvz data is nil, uuid generated")
 		pvzData.ID = uuid.New()
 	}
+
 	nilTime := time.Time{}
 	if pvzData.RegistrationDate == nilTime {
-		uc.log.Warn("create pvz: registration date is nil")
+		uc.log.Warn("registration date in pvz data is nil, set now")
 		pvzData.RegistrationDate = time.Now()
 	}
 
@@ -52,6 +57,9 @@ func (uc *Usecase) CreatePvz(ctx context.Context, pvzData *models.Pvz) (*models.
 }
 
 func (uc *Usecase) CreateReception(ctx context.Context, receptionData *models.ReceptionRequest) (*models.Reception, error) {
+	const op = "pvz.Usecase.CreateReception"
+	uc.log = uc.log.With("op", op)
+
 	reception := &models.Reception{
 		ID:       uuid.New(),
 		DateTime: time.Now(),
@@ -68,6 +76,9 @@ func (uc *Usecase) CreateReception(ctx context.Context, receptionData *models.Re
 }
 
 func (uc *Usecase) CloseLastReceptions(ctx context.Context, pvzId uuid.UUID) (*models.Reception, error) {
+	const op = "pvz.Usecase.CloseLastReceptions"
+	uc.log = uc.log.With("op", op)
+
 	closedReception, err := uc.repo.CloseLastReceptions(ctx, pvzId)
 	if err != nil {
 		return nil, err
@@ -76,6 +87,9 @@ func (uc *Usecase) CloseLastReceptions(ctx context.Context, pvzId uuid.UUID) (*m
 }
 
 func (uc *Usecase) AddProduct(ctx context.Context, product *models.ProductRequest) (*models.Product, error) {
+	const op = "pvz.Usecase.AddProduct"
+	uc.log = uc.log.With("op", op)
+
 	if !product.Type.IsValid() {
 		uc.log.Error("incorrect type for product: " + string(product.Type))
 		return nil, pvz.ErrIncorrectProductType
@@ -97,6 +111,9 @@ func (uc *Usecase) AddProduct(ctx context.Context, product *models.ProductReques
 }
 
 func (uc *Usecase) DeleteLastProduct(ctx context.Context, pvzId uuid.UUID) error {
+	const op = "pvz.Usecase.DeleteLastProduct"
+	uc.log = uc.log.With("op", op)
+
 	err := uc.repo.DeleteLastProduct(ctx, pvzId)
 	if err != nil {
 		return err
@@ -105,5 +122,8 @@ func (uc *Usecase) DeleteLastProduct(ctx context.Context, pvzId uuid.UUID) error
 }
 
 func (uc *Usecase) GetPvz(ctx context.Context, startDate, endDate time.Time, limit, page uint64) (*models.Pvz, error) {
+	const op = "pvz.Usecase.GetPvz"
+	uc.log = uc.log.With("op", op)
+
 	return uc.repo.GetPvz(ctx, startDate, endDate, limit, page)
 }
