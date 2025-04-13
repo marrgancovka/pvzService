@@ -35,6 +35,9 @@ func NewUsecase(p Params) *Usecase {
 }
 
 func (uc *Usecase) DummyLogin(ctx context.Context, role *models.DummyLogin) (string, error) {
+	const op = "auth.Usecase.DummyLogin"
+	uc.log = uc.log.With("op", op)
+
 	if !role.Role.IsValid() {
 		uc.log.Error("invalid role: " + string(role.Role))
 		return "", auth.ErrIncorrectRole
@@ -46,17 +49,21 @@ func (uc *Usecase) DummyLogin(ctx context.Context, role *models.DummyLogin) (str
 	if err != nil && !errors.Is(err, jwter.ErrNoID) {
 		return "", err
 	}
+
 	return token.Token, nil
 }
 
 func (uc *Usecase) Login(ctx context.Context, userData *models.Users) (string, error) {
+	const op = "auth.Usecase.Login"
+	uc.log = uc.log.With("op", op)
+
 	user, err := uc.repo.GetUserByEmail(ctx, userData.Email)
 	if err != nil {
 		return "", err
 	}
 	if !hasher.CompareStringHash(userData.Password, user.Password) {
 		uc.log.Error("passwords don't match")
-		return "", auth.ErrIncorrectData
+		return "", auth.ErrIncorrectPasswordOrEmail
 	}
 
 	tokenPayload := &models.TokenPayload{
@@ -67,20 +74,26 @@ func (uc *Usecase) Login(ctx context.Context, userData *models.Users) (string, e
 	if err != nil {
 		return "", err
 	}
+
 	return token.Token, nil
 }
 
 func (uc *Usecase) Register(ctx context.Context, userData *models.Users) (string, error) {
+	const op = "auth.Usecase.Register"
+	uc.log = uc.log.With("op", op)
+
 	if !userData.Role.IsValid() {
 		uc.log.Error("invalid role: " + string(userData.Role))
 		return "", auth.ErrIncorrectRole
 	}
+
 	userData.ID = uuid.New()
 	userData.Password = hasher.GenerateHashString(userData.Password)
 	newUser, err := uc.repo.CreateUser(ctx, userData)
 	if err != nil {
 		return "", err
 	}
+
 	tokenPayload := &models.TokenPayload{
 		ID:   newUser.ID,
 		Role: newUser.Role,
@@ -89,5 +102,6 @@ func (uc *Usecase) Register(ctx context.Context, userData *models.Users) (string
 	if err != nil {
 		return "", err
 	}
+
 	return token.Token, nil
 }

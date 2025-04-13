@@ -13,6 +13,10 @@ import (
 	"log/slog"
 )
 
+const (
+	PgErrCodeAlreadyExists = "23505"
+)
+
 type Params struct {
 	fx.In
 
@@ -36,6 +40,9 @@ func NewRepository(params Params) *Repository {
 }
 
 func (repo *Repository) GetUserByEmail(ctx context.Context, email string) (*models.Users, error) {
+	const op = "auth.Repository.GetUserByEmail"
+	repo.log = repo.log.With("op", op)
+
 	query, args, err := repo.builder.
 		Select("id", "email", "role", "password").
 		From("users").
@@ -56,7 +63,7 @@ func (repo *Repository) GetUserByEmail(ctx context.Context, email string) (*mode
 
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			repo.log.Debug("get user by email: user not found")
+			repo.log.Error("user not found")
 			return nil, auth.ErrUserNotFound
 		}
 		repo.log.Error("failed to get user: " + err.Error())
@@ -64,9 +71,12 @@ func (repo *Repository) GetUserByEmail(ctx context.Context, email string) (*mode
 	}
 
 	return user, nil
-
 }
+
 func (repo *Repository) CreateUser(ctx context.Context, user *models.Users) (*models.Users, error) {
+	const op = "auth.Repository.CreateUser"
+	repo.log = repo.log.With("op", op)
+
 	query, args, err := repo.builder.
 		Insert("users").
 		Columns("id", "email", "role", "password").
@@ -86,12 +96,13 @@ func (repo *Repository) CreateUser(ctx context.Context, user *models.Users) (*mo
 		&createdUser.Password,
 	); err != nil {
 		pgErr := &pgconn.PgError{}
-		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-			repo.log.Warn("user already exists")
-			return nil, auth.ErrAlreadyExists
+		if errors.As(err, &pgErr) && pgErr.Code == PgErrCodeAlreadyExists {
+			repo.log.Error("user already exists")
+			return nil, auth.ErrUserAlreadyExists
 		}
 		repo.log.Error("failed to create user" + err.Error())
 		return nil, err
 	}
+
 	return createdUser, nil
 }

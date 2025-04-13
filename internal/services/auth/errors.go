@@ -3,9 +3,9 @@ package auth
 import "errors"
 
 var (
-	ErrUserNotFound  = errors.New("user not found")
-	ErrIncorrectData = errors.New("incorrect password or email")
-	ErrAlreadyExists = errors.New("user already exists")
-	ErrIncorrectRole = errors.New("incorrect access level")
-	ErrBadRequest    = errors.New("bad request")
+	ErrUserNotFound             = errors.New("user not found")
+	ErrUserAlreadyExists        = errors.New("user already exists")
+	ErrIncorrectPasswordOrEmail = errors.New("incorrect password or email")
+	ErrIncorrectRole            = errors.New("incorrect access level")
+	ErrBadRequest               = errors.New("bad request")
 )
