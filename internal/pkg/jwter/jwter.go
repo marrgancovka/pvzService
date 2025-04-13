@@ -29,6 +29,9 @@ func New(p Params) *JWTer {
 }
 
 func (jwter *JWTer) GenerateJWT(payload *models.TokenPayload) (*models.Token, error) {
+	const op = "jwter.GenerateJWT"
+	jwter.log = jwter.log.With("op", op)
+
 	expTime := time.Now().Add(jwter.cfg.ExpirationTime)
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS512, jwt.MapClaims{
@@ -56,6 +59,9 @@ func (jwter *JWTer) GenerateJWT(payload *models.TokenPayload) (*models.Token, er
 }
 
 func (jwter *JWTer) ValidateJWT(tokenString string) (*models.TokenPayload, error) {
+	const op = "jwter.ValidateJWT"
+	jwter.log = jwter.log.With("op", op)
+
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			jwter.log.Error("validate jwt: Unexpected signing method")

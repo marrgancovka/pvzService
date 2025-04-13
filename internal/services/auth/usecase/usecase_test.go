@@ -149,7 +149,7 @@ func TestUsecase_Login(t *testing.T) {
 					}, nil)
 			},
 			wantToken: "",
-			wantErr:   auth.ErrIncorrectData,
+			wantErr:   auth.ErrIncorrectPasswordOrEmail,
 		},
 	}
 
@@ -162,10 +162,10 @@ func TestUsecase_Login(t *testing.T) {
 			assert.Equal(t, tt.wantToken, token)
 			if tt.wantErr != nil {
 				assert.Error(t, err)
-				if !errors.Is(tt.wantErr, auth.ErrIncorrectData) {
+				if !errors.Is(tt.wantErr, auth.ErrIncorrectPasswordOrEmail) {
 					assert.EqualError(t, err, tt.wantErr.Error())
 				} else {
-					assert.True(t, errors.Is(err, auth.ErrIncorrectData))
+					assert.True(t, errors.Is(err, auth.ErrIncorrectPasswordOrEmail))
 				}
 			} else {
 				assert.NoError(t, err)
@@ -243,10 +243,10 @@ func TestUsecase_Register(t *testing.T) {
 			setupMocks: func() {
 				mockRepo.EXPECT().
 					CreateUser(gomock.Any(), gomock.Any()).
-					Return(nil, auth.ErrAlreadyExists)
+					Return(nil, auth.ErrUserAlreadyExists)
 			},
 			wantToken: "",
-			wantErr:   auth.ErrAlreadyExists,
+			wantErr:   auth.ErrUserAlreadyExists,
 		},
 	}
 

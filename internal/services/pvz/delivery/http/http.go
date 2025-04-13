@@ -3,6 +3,7 @@ package http
 import (
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/marrgancovka/pvzService/internal/models"
 	"github.com/marrgancovka/pvzService/internal/pkg/middleware"
 	"github.com/marrgancovka/pvzService/internal/services/pvz"
@@ -157,6 +158,11 @@ func (h *Handler) CloseLastReception(w http.ResponseWriter, r *http.Request) {
 		responser.SendErr(w, http.StatusBadRequest, pvz.ErrBadRequest.Error())
 		return
 	}
+	if pvzId == uuid.Nil {
+		h.logger.Error("pvz id is nil")
+		responser.SendErr(w, http.StatusBadRequest, pvz.ErrBadRequest.Error())
+		return
+	}
 
 	closedReception, err := h.usecase.CloseLastReceptions(r.Context(), pvzId)
 	if err != nil {
@@ -255,6 +261,12 @@ func (h *Handler) AddProduct(w http.ResponseWriter, r *http.Request) {
 	productData := &models.ProductRequest{}
 	if err := reader.ReadRequestData(r, productData); err != nil {
 		h.logger.Error("error read request data: " + err.Error())
+		responser.SendErr(w, http.StatusBadRequest, pvz.ErrBadRequest.Error())
+		return
+	}
+
+	if productData.PvzID == uuid.Nil {
+		h.logger.Error("pvz id is nil")
 		responser.SendErr(w, http.StatusBadRequest, pvz.ErrBadRequest.Error())
 		return
 	}
