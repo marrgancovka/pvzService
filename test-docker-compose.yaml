@@ -1,0 +1,21 @@
+services:
+  testdb:
+    container_name: testpostgresql
+    image: postgres:latest
+    restart: always
+    volumes:
+      - type: volume
+        source: test-postgresdb-data
+        target: /var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: "test"
+      POSTGRES_PASSWORD: 123
+      POSTGRES_DB: "test_db"
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+
+volumes:
+  test-postgresdb-data:
+    driver: local

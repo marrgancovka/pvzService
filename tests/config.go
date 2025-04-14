@@ -1,0 +1,44 @@
+package tests
+
+import (
+	_ "github.com/joho/godotenv/autoload"
+	"github.com/marrgancovka/pvzService/internal/config"
+	"github.com/marrgancovka/pvzService/internal/pkg/db"
+	"github.com/marrgancovka/pvzService/internal/pkg/jwter"
+	"github.com/marrgancovka/pvzService/internal/pkg/server"
+	"os"
+	"time"
+)
+
+const (
+	testURL = "localhost:8081"
+	dbName  = "test_db"
+	dbUser  = "test"
+	dbPass  = "123"
+	dbPort  = 5433
+	dbHost  = "localhost"
+)
+
+func Config() config.Out {
+
+	return config.Out{
+		HTTPServer: server.Config{
+			Address:           testURL,
+			Timeout:           time.Second * 10,
+			IdleTimeout:       time.Second * 10,
+			ReadHeaderTimeout: time.Second * 10,
+		},
+		DB: db.Config{
+			DB:             dbName,
+			User:           dbUser,
+			Password:       dbPass,
+			Host:           dbHost,
+			Port:           dbPort,
+			ConnectTimeout: time.Minute,
+		},
+		Jwt: jwter.Config{
+			ExpirationTime: time.Hour,
+			KeyJWT:         []byte(os.Getenv("JWT_SECRET")),
+		},
+	}
+}

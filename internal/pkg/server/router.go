@@ -44,7 +44,7 @@ func NewRouter(p RouterParams) *Router {
 
 	reception := v1.PathPrefix("/receptions").Subrouter()
 	reception.Use(p.AuthMiddleware.AuthMiddleware)
-	reception.HandleFunc("/receptions", p.PvzHandler.CreateReception).Methods(http.MethodPost, http.MethodOptions)
+	reception.HandleFunc("", p.PvzHandler.CreateReception).Methods(http.MethodPost, http.MethodOptions)
 
 	product := v1.PathPrefix("/products").Subrouter()
 	product.Use(p.AuthMiddleware.AuthMiddleware)
