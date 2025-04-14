@@ -6,9 +6,11 @@ import (
 	"github.com/marrgancovka/pvzService/internal/pkg/db"
 	"github.com/marrgancovka/pvzService/internal/pkg/grpcconn"
 	"github.com/marrgancovka/pvzService/internal/pkg/jwter"
+	"github.com/marrgancovka/pvzService/internal/pkg/metrics"
 	"github.com/marrgancovka/pvzService/internal/pkg/middleware"
 	"github.com/marrgancovka/pvzService/internal/pkg/migrations"
-	"github.com/marrgancovka/pvzService/internal/pkg/server"
+	"github.com/marrgancovka/pvzService/internal/pkg/servers/mainServer"
+	"github.com/marrgancovka/pvzService/internal/pkg/servers/metricsServer"
 	"github.com/marrgancovka/pvzService/internal/services/auth"
 	authHandler "github.com/marrgancovka/pvzService/internal/services/auth/delivery/http"
 	authRepository "github.com/marrgancovka/pvzService/internal/services/auth/repo"
@@ -32,7 +34,7 @@ func main() {
 		fx.Provide(
 			logger.SetupLogger,
 			builder.SetupBuilder,
-			server.NewRouter,
+			mainServer.NewRouter,
 			func() config.ConfigPath {
 				return "config/main/config.yaml"
 			},
@@ -41,7 +43,9 @@ func main() {
 
 			grpcconn.Provide,
 
+			fx.Annotate(metrics.New, fx.As(new(metrics.Metrics))),
 			middleware.NewAuthMiddleware,
+			middleware.NewMetricsMiddleware,
 
 			db.NewPostgresPool,
 			db.NewPostgresConnect,
@@ -59,8 +63,9 @@ func main() {
 		}),
 
 		fx.Invoke(
-			server.RunServer,
+			mainServer.RunServer,
 			migrations.RunMigrations,
+			metricsServer.RunServer,
 		),
 	)
 
@@ -78,7 +83,6 @@ func main() {
 }
 
 // TODO: получение пвз
-// TODO: интеграционный тест
 // TODO: добавить прометеус
 
 // TODO: добавить dockerfile + prod.docker-compose + логирование в файл

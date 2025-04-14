@@ -11,7 +11,7 @@ import (
 	"github.com/marrgancovka/pvzService/internal/pkg/jwter"
 	"github.com/marrgancovka/pvzService/internal/pkg/middleware"
 	"github.com/marrgancovka/pvzService/internal/pkg/migrations"
-	"github.com/marrgancovka/pvzService/internal/pkg/server"
+	mainServer2 "github.com/marrgancovka/pvzService/internal/pkg/servers/mainServer"
 	"github.com/marrgancovka/pvzService/internal/services/auth"
 	authHandler "github.com/marrgancovka/pvzService/internal/services/auth/delivery/http"
 	authRepository "github.com/marrgancovka/pvzService/internal/services/auth/repo"
@@ -67,11 +67,11 @@ func (s *PVZIntegrationSuite) SetupSuite() {
 			fx.Annotate(pvzUsecase.NewUsecase, fx.As(new(pvz.Usecase))),
 			fx.Annotate(pvzRepository.NewRepository, fx.As(new(pvz.Repository))),
 
-			server.NewRouter,
+			mainServer2.NewRouter,
 		),
 		fx.Invoke(
 			migrations.RunMigrations,
-			server.RunServer,
+			mainServer2.RunServer,
 		),
 	)
 

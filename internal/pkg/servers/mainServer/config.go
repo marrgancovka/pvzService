@@ -1,4 +1,4 @@
-package server
+package mainServer
 
 import "time"
 

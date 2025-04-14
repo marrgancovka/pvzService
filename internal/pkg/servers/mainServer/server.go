@@ -1,4 +1,4 @@
-package server
+package mainServer
 
 import (
 	"errors"
@@ -23,7 +23,7 @@ func RunServer(params Params) {
 		IdleTimeout:       params.Config.IdleTimeout,
 	}
 	go func() {
-		params.Logger.Info("starting server", "address", srv.Addr)
+		params.Logger.Info("starting mainServer", "address", srv.Addr)
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			panic(err)
 		}

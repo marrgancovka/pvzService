@@ -1,4 +1,4 @@
-package grpcserver
+package grpcServer
 
 import "time"
 

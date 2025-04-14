@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/marrgancovka/pvzService/internal/config"
 	"github.com/marrgancovka/pvzService/internal/pkg/db"
-	"github.com/marrgancovka/pvzService/internal/pkg/grpcserver"
+	"github.com/marrgancovka/pvzService/internal/pkg/servers/grpcServer"
 	"github.com/marrgancovka/pvzService/internal/services/pvz"
 	"github.com/marrgancovka/pvzService/internal/services/pvz/delivery/grpc"
 	pvzRepository "github.com/marrgancovka/pvzService/internal/services/pvz/repo"
@@ -39,7 +39,7 @@ func main() {
 		}),
 
 		fx.Invoke(
-			grpcserver.RunServer,
+			grpcServer.RunServer,
 		),
 	)
 

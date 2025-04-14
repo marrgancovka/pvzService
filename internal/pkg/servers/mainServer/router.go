@@ -1,4 +1,4 @@
-package server
+package mainServer
 
 import (
 	"github.com/gorilla/mux"
@@ -13,10 +13,11 @@ import (
 type RouterParams struct {
 	fx.In
 
-	Logger         *slog.Logger
-	AuthHandler    *authHandler.Handler
-	PvzHandler     *pvzHandler.Handler
-	AuthMiddleware *middleware.AuthMiddleware
+	Logger            *slog.Logger
+	AuthHandler       *authHandler.Handler
+	PvzHandler        *pvzHandler.Handler
+	AuthMiddleware    *middleware.AuthMiddleware
+	MetricsMiddleware *middleware.MetricsMiddleware
 }
 
 type Router struct {
@@ -25,7 +26,7 @@ type Router struct {
 
 func NewRouter(p RouterParams) *Router {
 	api := mux.NewRouter().PathPrefix("/api").Subrouter()
-	api.Use(middleware.CORSMiddleware)
+	api.Use(middleware.CORSMiddleware, p.MetricsMiddleware.MetricsMiddleware)
 
 	v1 := api.PathPrefix("/v1").Subrouter()
 	v1.HandleFunc("/dummyLogin", p.AuthHandler.DummyLogin).Methods(http.MethodPost, http.MethodOptions)

@@ -47,7 +47,7 @@ func (c *pVZServiceClient) GetPVZList(ctx context.Context, in *GetPVZListRequest
 	return out, nil
 }
 
-// PVZServiceServer is the server API for PVZService service.
+// PVZServiceServer is the mainServer API for PVZService service.
 // All implementations must embed UnimplementedPVZServiceServer
 // for forward compatibility.
 type PVZServiceServer interface {

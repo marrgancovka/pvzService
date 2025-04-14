@@ -55,7 +55,7 @@ func (h *Handler) DummyLogin(w http.ResponseWriter, r *http.Request) {
 			responser.SendErr(w, http.StatusBadRequest, auth.ErrIncorrectRole.Error())
 			return
 		default:
-			responser.SendErr(w, http.StatusInternalServerError, "internal server error")
+			responser.SendErr(w, http.StatusInternalServerError, "internal mainServer error")
 			return
 		}
 	}
@@ -88,7 +88,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 			responser.SendErr(w, http.StatusBadRequest, auth.ErrIncorrectPasswordOrEmail.Error())
 			return
 		default:
-			responser.SendErr(w, http.StatusInternalServerError, "internal server error")
+			responser.SendErr(w, http.StatusInternalServerError, "internal mainServer error")
 			return
 		}
 	}
@@ -124,7 +124,7 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 			responser.SendErr(w, http.StatusBadRequest, auth.ErrIncorrectRole.Error())
 			return
 		default:
-			responser.SendErr(w, http.StatusInternalServerError, "internal server error")
+			responser.SendErr(w, http.StatusInternalServerError, "internal mainServer error")
 			return
 		}
 	}

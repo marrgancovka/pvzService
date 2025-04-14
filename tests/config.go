@@ -5,7 +5,7 @@ import (
 	"github.com/marrgancovka/pvzService/internal/config"
 	"github.com/marrgancovka/pvzService/internal/pkg/db"
 	"github.com/marrgancovka/pvzService/internal/pkg/jwter"
-	"github.com/marrgancovka/pvzService/internal/pkg/server"
+	"github.com/marrgancovka/pvzService/internal/pkg/servers/mainServer"
 	"os"
 	"time"
 )
@@ -22,7 +22,7 @@ const (
 func Config() config.Out {
 
 	return config.Out{
-		HTTPServer: server.Config{
+		HTTPServer: mainServer.Config{
 			Address:           testURL,
 			Timeout:           time.Second * 10,
 			IdleTimeout:       time.Second * 10,

@@ -15,7 +15,26 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASS}
       POSTGRES_DB: ${DB_NAME}
+    networks:
+      - pvz_network
+
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yaml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yaml'
+    networks:
+      - pvz_network
+
 
 volumes:
   postgresdb-data:
     driver: local
+
+networks:
+  pvz_network:
+    name: pvz_network

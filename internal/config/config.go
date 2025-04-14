@@ -5,9 +5,9 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/marrgancovka/pvzService/internal/pkg/db"
 	"github.com/marrgancovka/pvzService/internal/pkg/grpcconn"
-	"github.com/marrgancovka/pvzService/internal/pkg/grpcserver"
 	"github.com/marrgancovka/pvzService/internal/pkg/jwter"
-	"github.com/marrgancovka/pvzService/internal/pkg/server"
+	"github.com/marrgancovka/pvzService/internal/pkg/servers/grpcServer"
+	"github.com/marrgancovka/pvzService/internal/pkg/servers/mainServer"
 	"go.uber.org/fx"
 	"log"
 	"os"
@@ -16,8 +16,8 @@ import (
 type Config struct {
 	//ConfigPath string `env:"CONFIG_PATH" env-default:"config/config.yaml"`
 
-	HTTPServer    server.Config     `yaml:"httpServer"`
-	GRPCServer    grpcserver.Config `yaml:"grpcServer"`
+	HTTPServer    mainServer.Config `yaml:"httpServer"`
+	GRPCServer    grpcServer.Config `yaml:"grpcServer"`
 	PvzGRPCClient grpcconn.Config   `yaml:"pvzGRPCClient"`
 	DB            db.Config         `yaml:"db"`
 	Jwt           jwter.Config      `yaml:"jwt"`
@@ -34,8 +34,8 @@ type In struct {
 type Out struct {
 	fx.Out
 
-	HTTPServer    server.Config
-	GRPCServer    grpcserver.Config
+	HTTPServer    mainServer.Config
+	GRPCServer    grpcServer.Config
 	PvzGRPCClient grpcconn.Config
 	DB            db.Config
 	Jwt           jwter.Config

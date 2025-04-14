@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/marrgancovka/pvzService/internal/models"
+	"github.com/marrgancovka/pvzService/internal/pkg/metrics"
 	"github.com/marrgancovka/pvzService/internal/pkg/middleware"
 	"github.com/marrgancovka/pvzService/internal/services/pvz"
 	"github.com/marrgancovka/pvzService/internal/services/pvz/delivery/grpc/gen"
@@ -24,12 +25,14 @@ type Params struct {
 	Logger     *slog.Logger
 	Usecase    pvz.Usecase
 	GRPCClient *grpc.ClientConn
+	Metrics    metrics.Metrics
 }
 
 type Handler struct {
 	logger     *slog.Logger
 	usecase    pvz.Usecase
 	grpcClient gen.PVZServiceClient
+	metrics    metrics.Metrics
 }
 
 func NewHandler(params Params) *Handler {
@@ -37,6 +40,7 @@ func NewHandler(params Params) *Handler {
 		grpcClient: gen.NewPVZServiceClient(params.GRPCClient),
 		logger:     params.Logger,
 		usecase:    params.Usecase,
+		metrics:    params.Metrics,
 	}
 }
 
@@ -67,12 +71,13 @@ func (h *Handler) CreatePvz(w http.ResponseWriter, r *http.Request) {
 			responser.SendErr(w, http.StatusBadRequest, pvz.ErrInaccessibleCity.Error())
 			return
 		default:
-			responser.SendErr(w, http.StatusInternalServerError, "internal server error")
+			responser.SendErr(w, http.StatusInternalServerError, "internal mainServer error")
 			return
 		}
 	}
 
 	h.logger.Info("success create pvz", "response", createdPvz)
+	h.metrics.CreatedPvzTotal(string(createdPvz.City))
 	responser.SendOk(w, http.StatusCreated, createdPvz)
 }
 
@@ -176,7 +181,7 @@ func (h *Handler) CloseLastReception(w http.ResponseWriter, r *http.Request) {
 			responser.SendErr(w, http.StatusBadRequest, pvz.ErrNoOpenReception.Error())
 			return
 		default:
-			responser.SendErr(w, http.StatusInternalServerError, "internal server error")
+			responser.SendErr(w, http.StatusInternalServerError, "internal mainServer error")
 			return
 		}
 	}
@@ -212,7 +217,7 @@ func (h *Handler) DeleteLastProduct(w http.ResponseWriter, r *http.Request) {
 			responser.SendErr(w, http.StatusBadRequest, pvz.ErrNoProduct.Error())
 			return
 		default:
-			responser.SendErr(w, http.StatusInternalServerError, "internal server error")
+			responser.SendErr(w, http.StatusInternalServerError, "internal mainServer error")
 			return
 		}
 	}
@@ -244,12 +249,13 @@ func (h *Handler) CreateReception(w http.ResponseWriter, r *http.Request) {
 			responser.SendErr(w, http.StatusBadRequest, pvz.ErrNoOpenReception.Error())
 			return
 		default:
-			responser.SendErr(w, http.StatusInternalServerError, "internal server error")
+			responser.SendErr(w, http.StatusInternalServerError, "internal mainServer error")
 			return
 		}
 	}
 
 	h.logger.Info("success create reception", "response", createdReception)
+	h.metrics.CreatedReceptionsTotal(fmt.Sprint(createdReception.PvzID))
 	responser.SendOk(w, http.StatusCreated, createdReception)
 }
 
@@ -283,12 +289,13 @@ func (h *Handler) AddProduct(w http.ResponseWriter, r *http.Request) {
 			responser.SendErr(w, http.StatusBadRequest, pvz.ErrNoOpenReception.Error())
 			return
 		default:
-			responser.SendErr(w, http.StatusInternalServerError, "internal server error")
+			responser.SendErr(w, http.StatusInternalServerError, "internal mainServer error")
 			return
 		}
 	}
 
 	h.logger.Info("success add product", "response", addedProduct)
+	h.metrics.AddedProductTotal(string(addedProduct.Type))
 	responser.SendOk(w, http.StatusCreated, addedProduct)
 }
 
@@ -296,7 +303,7 @@ func (h *Handler) GetPvzList(w http.ResponseWriter, r *http.Request) {
 	list, err := h.grpcClient.GetPVZList(r.Context(), &gen.GetPVZListRequest{})
 	if err != nil {
 		h.logger.Error("error get pvz list: " + err.Error())
-		responser.SendErr(w, http.StatusInternalServerError, "internal server error")
+		responser.SendErr(w, http.StatusInternalServerError, "internal mainServer error")
 	}
 
 	result := make([]*models.Pvz, len(list.Pvzs))

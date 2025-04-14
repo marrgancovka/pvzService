@@ -1,4 +1,4 @@
-package grpcserver
+package grpcServer
 
 import (
 	pvz "github.com/marrgancovka/pvzService/internal/services/pvz/delivery/grpc"
@@ -25,7 +25,7 @@ func RunServer(in In) {
 		if err != nil {
 			in.Logger.Error("listen returned err: " + err.Error())
 		}
-		in.Logger.Info("grpc server started", slog.String("addr", listener.Addr().String()))
+		in.Logger.Info("grpc mainServer started", slog.String("addr", listener.Addr().String()))
 		if err = srv.Serve(listener); err != nil {
 			in.Logger.Error("serve returned err: " + err.Error())
 		}
