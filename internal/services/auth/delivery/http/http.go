@@ -32,18 +32,18 @@ func NewHandler(params Params) *Handler {
 
 func (h *Handler) DummyLogin(w http.ResponseWriter, r *http.Request) {
 	const op = "auth.Handler.DummyLogin"
-	h.logger = h.logger.With("op", op)
+	logger := h.logger.With("op", op)
 
 	var role *models.DummyLogin
 
 	if err := reader.ReadRequestData(r, &role); err != nil {
-		h.logger.Error("error read request data: " + err.Error())
+		logger.Error("error read request data: " + err.Error())
 		responser.SendErr(w, http.StatusBadRequest, auth.ErrBadRequest.Error())
 		return
 	}
 
 	if role == nil {
-		h.logger.Error("role is nil")
+		logger.Error("role is nil")
 		responser.SendErr(w, http.StatusBadRequest, auth.ErrBadRequest.Error())
 		return
 	}
@@ -60,23 +60,23 @@ func (h *Handler) DummyLogin(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	h.logger.Info("success dummy login: " + token)
+	logger.Info("success dummy login: " + token)
 	responser.SendOk(w, http.StatusOK, token)
 }
 
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	const op = "auth.Handler.Login"
-	h.logger = h.logger.With("op", op)
+	logger := h.logger.With("op", op)
 
 	userData := &models.Users{}
 	if err := reader.ReadRequestData(r, userData); err != nil {
-		h.logger.Error("error read request data: " + err.Error())
+		logger.Error("error read request data: " + err.Error())
 		responser.SendErr(w, http.StatusBadRequest, auth.ErrBadRequest.Error())
 		return
 	}
 
 	if userData.Email == "" || userData.Password == "" {
-		h.logger.Error("email or password is empty")
+		logger.Error("email or password is empty")
 		responser.SendErr(w, http.StatusBadRequest, auth.ErrBadRequest.Error())
 		return
 	}
@@ -93,23 +93,23 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	h.logger.Info("success login user: " + token)
+	logger.Info("success login user: " + token)
 	responser.SendOk(w, http.StatusOK, token)
 }
 
 func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 	const op = "auth.Handler.Register"
-	h.logger = h.logger.With("op", op)
+	logger := h.logger.With("op", op)
 
 	userData := &models.Users{}
 	if err := reader.ReadRequestData(r, userData); err != nil {
-		h.logger.Error("error read request data: " + err.Error())
+		logger.Error("error read request data: " + err.Error())
 		responser.SendErr(w, http.StatusBadRequest, auth.ErrBadRequest.Error())
 		return
 	}
 
 	if userData.Email == "" || userData.Password == "" || userData.Role == "" {
-		h.logger.Error("email, password or role is empty")
+		logger.Error("email, password or role is empty")
 		responser.SendErr(w, http.StatusBadRequest, auth.ErrBadRequest.Error())
 		return
 	}
@@ -129,6 +129,6 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	h.logger.Info("success register user: " + token)
+	logger.Info("success register user: " + token)
 	responser.SendOk(w, http.StatusCreated, token)
 }

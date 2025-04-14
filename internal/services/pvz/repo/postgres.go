@@ -45,7 +45,7 @@ func NewRepository(params Params) *Repository {
 
 func (repo *Repository) CreatePvz(ctx context.Context, pvzData *models.Pvz) (*models.Pvz, error) {
 	const op = "pvz.Repository.CreatePvz"
-	repo.log = repo.log.With("op", op)
+	logger := repo.log.With("op", op)
 
 	query, args, err := repo.builder.
 		Insert("pvz").
@@ -54,7 +54,7 @@ func (repo *Repository) CreatePvz(ctx context.Context, pvzData *models.Pvz) (*mo
 		Suffix("RETURNING id, registration_date, city").
 		ToSql()
 	if err != nil {
-		repo.log.Error("build query error: " + err.Error())
+		logger.Error("build query error: " + err.Error())
 		return nil, err
 	}
 
@@ -66,10 +66,10 @@ func (repo *Repository) CreatePvz(ctx context.Context, pvzData *models.Pvz) (*mo
 	); err != nil {
 		pgErr := &pgconn.PgError{}
 		if errors.As(err, &pgErr) && pgErr.Code == PgErrCodeAlreadyExists {
-			repo.log.Warn("pvz with this id already exists")
+			logger.Warn("pvz with this id already exists")
 			return nil, pvz.ErrAlreadyExists
 		}
-		repo.log.Error("failed to create pvz" + err.Error())
+		logger.Error("failed to create pvz" + err.Error())
 		return nil, err
 	}
 
@@ -78,11 +78,11 @@ func (repo *Repository) CreatePvz(ctx context.Context, pvzData *models.Pvz) (*mo
 
 func (repo *Repository) CreateReception(ctx context.Context, receptionData *models.Reception) (*models.Reception, error) {
 	const op = "pvz.Repository.CreateReception"
-	repo.log = repo.log.With("op", op)
+	logger := repo.log.With("op", op)
 
 	tx, err := repo.pool.Begin(ctx)
 	if err != nil {
-		repo.log.Error("failed to begin transaction: " + err.Error())
+		logger.Error("failed to begin transaction: " + err.Error())
 		return nil, err
 	}
 	defer tx.Rollback(ctx)
@@ -94,18 +94,18 @@ func (repo *Repository) CreateReception(ctx context.Context, receptionData *mode
 		Where(squirrel.And{squirrel.Eq{"pvz_id": receptionData.PvzID}, squirrel.Eq{"status": models.StatusInProgress}}).
 		ToSql()
 	if err != nil {
-		repo.log.Error("build query error: " + err.Error())
+		logger.Error("build query error: " + err.Error())
 		return nil, err
 	}
 
 	haveInProgress := 0
 	err = tx.QueryRow(ctx, query, args...).Scan(&haveInProgress)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
-		repo.log.Error("failed to check if reception exists: " + err.Error())
+		logger.Error("failed to check if reception exists: " + err.Error())
 		return nil, err
 	}
 	if haveInProgress == 1 {
-		repo.log.Error("in this pvz open reception already exists")
+		logger.Error("in this pvz open reception already exists")
 		return nil, pvz.ErrNoOpenReception
 	}
 
@@ -116,7 +116,7 @@ func (repo *Repository) CreateReception(ctx context.Context, receptionData *mode
 		Suffix("RETURNING id, date_time, pvz_id, status").
 		ToSql()
 	if err != nil {
-		repo.log.Error("build query error: " + err.Error())
+		logger.Error("build query error: " + err.Error())
 		return nil, err
 	}
 
@@ -129,15 +129,15 @@ func (repo *Repository) CreateReception(ctx context.Context, receptionData *mode
 	); err != nil {
 		pgErr := &pgconn.PgError{}
 		if errors.As(err, &pgErr) && pgErr.Code == PgErrViolatesForeignKeyConstraint {
-			repo.log.Error("pvz with this id not exists")
+			logger.Error("pvz with this id not exists")
 			return nil, pvz.ErrPvzNotExists
 		}
-		repo.log.Error("failed to create reception: " + err.Error())
+		logger.Error("failed to create reception: " + err.Error())
 		return nil, err
 	}
 
 	if err = tx.Commit(ctx); err != nil {
-		repo.log.Error("failed to commit transaction: " + err.Error())
+		logger.Error("failed to commit transaction: " + err.Error())
 		return nil, err
 	}
 
@@ -146,7 +146,7 @@ func (repo *Repository) CreateReception(ctx context.Context, receptionData *mode
 
 func (repo *Repository) CloseLastReceptions(ctx context.Context, pvzId uuid.UUID) (*models.Reception, error) {
 	const op = "pvz.Repository.CloseLastReceptions"
-	repo.log = repo.log.With("op", op)
+	logger := repo.log.With("op", op)
 
 	query, args, err := repo.builder.
 		Update("receptions").
@@ -158,7 +158,7 @@ func (repo *Repository) CloseLastReceptions(ctx context.Context, pvzId uuid.UUID
 		Suffix("RETURNING id, date_time, pvz_id, status").
 		ToSql()
 	if err != nil {
-		repo.log.Error("build query error: " + err.Error())
+		logger.Error("build query error: " + err.Error())
 		return nil, err
 	}
 
@@ -170,10 +170,10 @@ func (repo *Repository) CloseLastReceptions(ctx context.Context, pvzId uuid.UUID
 		&closedReception.Status,
 	); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			repo.log.Error("in this pvz open reception not exists")
+			logger.Error("in this pvz open reception not exists")
 			return nil, pvz.ErrNoOpenReception
 		}
-		repo.log.Error("failed to update status: " + err.Error())
+		logger.Error("failed to update status: " + err.Error())
 		return nil, err
 	}
 
@@ -182,11 +182,11 @@ func (repo *Repository) CloseLastReceptions(ctx context.Context, pvzId uuid.UUID
 
 func (repo *Repository) AddProduct(ctx context.Context, product *models.Product, pvzID uuid.UUID) (*models.Product, error) {
 	const op = "pvz.Repository.AddProduct"
-	repo.log = repo.log.With("op", op)
+	logger := repo.log.With("op", op)
 
 	tx, err := repo.pool.Begin(ctx)
 	if err != nil {
-		repo.log.Error("failed to begin transaction: " + err.Error())
+		logger.Error("failed to begin transaction: " + err.Error())
 		return nil, err
 	}
 	defer tx.Rollback(ctx)
@@ -203,7 +203,7 @@ func (repo *Repository) AddProduct(ctx context.Context, product *models.Product,
 		Suffix("RETURNING id, date_time, type, reception_id").
 		ToSql()
 	if err != nil {
-		repo.log.Error("build query error: " + err.Error())
+		logger.Error("build query error: " + err.Error())
 		return nil, err
 	}
 
@@ -213,12 +213,12 @@ func (repo *Repository) AddProduct(ctx context.Context, product *models.Product,
 		&product.Type,
 		&product.ReceptionID,
 	); err != nil {
-		repo.log.Error("failed to add product: " + err.Error())
+		logger.Error("failed to add product: " + err.Error())
 		return nil, err
 	}
 
 	if err = tx.Commit(ctx); err != nil {
-		repo.log.Error("failed to commit transaction: " + err.Error())
+		logger.Error("failed to commit transaction: " + err.Error())
 		return nil, err
 	}
 
@@ -227,11 +227,11 @@ func (repo *Repository) AddProduct(ctx context.Context, product *models.Product,
 
 func (repo *Repository) DeleteLastProduct(ctx context.Context, pvzID uuid.UUID) error {
 	const op = "pvz.Repository.DeleteLastProduct"
-	repo.log = repo.log.With("op", op)
+	logger := repo.log.With("op", op)
 
 	tx, err := repo.pool.Begin(ctx)
 	if err != nil {
-		repo.log.Error("failed to begin transaction: " + err.Error())
+		logger.Error("failed to begin transaction: " + err.Error())
 		return err
 	}
 	defer tx.Rollback(ctx)
@@ -249,17 +249,17 @@ func (repo *Repository) DeleteLastProduct(ctx context.Context, pvzID uuid.UUID) 
 		Limit(1).
 		ToSql()
 	if err != nil {
-		repo.log.Error("build query error: " + err.Error())
+		logger.Error("build query error: " + err.Error())
 		return err
 	}
 
 	productId := uuid.Nil
 	if err = tx.QueryRow(ctx, query, args...).Scan(&productId); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			repo.log.Error("no products in this reception")
+			logger.Error("no products in this reception")
 			return pvz.ErrNoProduct
 		}
-		repo.log.Error("failed to found product: " + err.Error())
+		logger.Error("failed to found product: " + err.Error())
 		return err
 	}
 
@@ -268,17 +268,17 @@ func (repo *Repository) DeleteLastProduct(ctx context.Context, pvzID uuid.UUID) 
 		Where(squirrel.Eq{"id": productId}).
 		ToSql()
 	if err != nil {
-		repo.log.Error("build query error: " + err.Error())
+		logger.Error("build query error: " + err.Error())
 		return err
 	}
 
 	if _, err = tx.Exec(ctx, query, args...); err != nil {
-		repo.log.Error("failed to delete product: " + err.Error())
+		logger.Error("failed to delete product: " + err.Error())
 		return err
 	}
 
 	if err = tx.Commit(ctx); err != nil {
-		repo.log.Error("failed to commit transaction: " + err.Error())
+		logger.Error("failed to commit transaction: " + err.Error())
 		return err
 	}
 
@@ -287,7 +287,7 @@ func (repo *Repository) DeleteLastProduct(ctx context.Context, pvzID uuid.UUID) 
 
 func (repo *Repository) getLastInProgressReceptionID(ctx context.Context, tx pgx.Tx, pvzID uuid.UUID) (uuid.UUID, error) {
 	const op = "pvz.Repository.getLastInProgressReceptionID"
-	repo.log = repo.log.With("op", op)
+	logger := repo.log.With("op", op)
 
 	query, args, err := repo.builder.
 		Select("id").
@@ -298,17 +298,17 @@ func (repo *Repository) getLastInProgressReceptionID(ctx context.Context, tx pgx
 		}).
 		ToSql()
 	if err != nil {
-		repo.log.Error("failed to build query: " + err.Error())
+		logger.Error("failed to build query: " + err.Error())
 		return uuid.Nil, err
 	}
 
 	var receptionID uuid.UUID
 	if err = tx.QueryRow(ctx, query, args...).Scan(&receptionID); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			repo.log.Warn("no open reception found", "pvz_id", pvzID)
+			logger.Warn("no open reception found", "pvz_id", pvzID)
 			return uuid.Nil, pvz.ErrNoOpenReception
 		}
-		repo.log.Error("failed to get open reception: " + err.Error())
+		logger.Error("failed to get open reception: " + err.Error())
 		return uuid.Nil, err
 	}
 
@@ -389,7 +389,7 @@ func (repo *Repository) GetPvz(ctx context.Context, startDate, endDate time.Time
 
 func (repo *Repository) GetPvzList(ctx context.Context) ([]*models.Pvz, error) {
 	const op = "pvz.Repository.GetPvzList"
-	repo.log = repo.log.With("op", op)
+	logger := repo.log.With("op", op)
 
 	query, _, err := repo.builder.
 		Select("id", "registration_date", "city").
@@ -397,13 +397,13 @@ func (repo *Repository) GetPvzList(ctx context.Context) ([]*models.Pvz, error) {
 		OrderBy("registration_date").
 		ToSql()
 	if err != nil {
-		repo.log.Error("failed to build query: " + err.Error())
+		logger.Error("failed to build query: " + err.Error())
 		return nil, err
 	}
 
 	rows, err := repo.pool.Query(ctx, query)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
-		repo.log.Error("failed to execute query: " + err.Error())
+		logger.Error("failed to execute query: " + err.Error())
 		return nil, err
 	}
 	defer rows.Close()
@@ -412,7 +412,7 @@ func (repo *Repository) GetPvzList(ctx context.Context) ([]*models.Pvz, error) {
 	for rows.Next() {
 		row := &models.Pvz{}
 		if err = rows.Scan(&row.ID, &row.RegistrationDate, &row.City); err != nil {
-			repo.log.Error("failed to scan row: " + err.Error())
+			logger.Error("failed to scan row: " + err.Error())
 			return nil, err
 		}
 		results = append(results, row)

@@ -83,7 +83,6 @@ func main() {
 }
 
 // TODO: получение пвз
-// TODO: добавить прометеус
 
 // TODO: добавить dockerfile + prod.docker-compose + логирование в файл
 // TODO: написать makefile

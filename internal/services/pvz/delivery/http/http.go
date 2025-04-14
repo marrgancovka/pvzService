@@ -46,17 +46,17 @@ func NewHandler(params Params) *Handler {
 
 func (h *Handler) CreatePvz(w http.ResponseWriter, r *http.Request) {
 	const op = "pvz.Handler.CreatePvz"
-	h.logger = h.logger.With("op", op)
+	logger := h.logger.With("op", op)
 
 	if r.Context().Value(middleware.RoleInContext) != models.RoleModerator {
-		h.logger.Error("only for moderator")
+		logger.Error("only for moderator")
 		responser.SendErr(w, http.StatusForbidden, pvz.ErrNoAccess.Error())
 		return
 	}
 
 	pvzData := &models.Pvz{}
 	if err := reader.ReadRequestData(r, pvzData); err != nil {
-		h.logger.Error("error read request data: " + err.Error())
+		logger.Error("error read request data: " + err.Error())
 		responser.SendErr(w, http.StatusBadRequest, pvz.ErrBadRequest.Error())
 		return
 	}
@@ -76,17 +76,17 @@ func (h *Handler) CreatePvz(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	h.logger.Info("success create pvz", "response", createdPvz)
+	logger.Info("success create pvz", "response", createdPvz)
 	h.metrics.CreatedPvzTotal(string(createdPvz.City))
 	responser.SendOk(w, http.StatusCreated, createdPvz)
 }
 
 func (h *Handler) GetPvzs(w http.ResponseWriter, r *http.Request) {
 	const op = "pvz.Handler.GetPvzList"
-	h.logger = h.logger.With("op", op)
+	logger := h.logger.With("op", op)
 
 	if r.Context().Value(middleware.RoleInContext) != models.RoleModerator && r.Context().Value(middleware.RoleInContext) != models.RoleEmployee {
-		h.logger.Error("only for moderator or employee")
+		logger.Error("only for moderator or employee")
 		responser.SendErr(w, http.StatusForbidden, pvz.ErrNoAccess.Error())
 		return
 	}
@@ -99,7 +99,7 @@ func (h *Handler) GetPvzs(w http.ResponseWriter, r *http.Request) {
 	if startDateStr != "" {
 		startDate, err = parseDate(startDateStr)
 		if err != nil {
-			h.logger.Error("error parsing date: " + err.Error())
+			logger.Error("error parsing date: " + err.Error())
 			responser.SendErr(w, http.StatusBadRequest, pvz.ErrBadRequest.Error())
 			return
 		}
@@ -110,7 +110,7 @@ func (h *Handler) GetPvzs(w http.ResponseWriter, r *http.Request) {
 	if endDateStr != "" {
 		endDate, err = parseDate(endDateStr)
 		if err != nil {
-			h.logger.Error("error parsing date: " + err.Error())
+			logger.Error("error parsing date: " + err.Error())
 			responser.SendErr(w, http.StatusBadRequest, pvz.ErrBadRequest.Error())
 			return
 		}
@@ -121,7 +121,7 @@ func (h *Handler) GetPvzs(w http.ResponseWriter, r *http.Request) {
 	if limitStr != "" {
 		limitInt, err := strconv.Atoi(limitStr)
 		if err != nil {
-			h.logger.Error("error conv limit: " + err.Error())
+			logger.Error("error conv limit: " + err.Error())
 			responser.SendErr(w, http.StatusBadRequest, pvz.ErrBadRequest.Error())
 			return
 		}
@@ -133,7 +133,7 @@ func (h *Handler) GetPvzs(w http.ResponseWriter, r *http.Request) {
 	if pageStr != "" {
 		pageInt, err := strconv.Atoi(pageStr)
 		if err != nil {
-			h.logger.Error("error conv page: " + err.Error())
+			logger.Error("error conv page: " + err.Error())
 			responser.SendErr(w, http.StatusBadRequest, pvz.ErrBadRequest.Error())
 			return
 		}
@@ -148,28 +148,28 @@ func (h *Handler) GetPvzs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.logger.Info("success get pvz", "response", pvzList)
+	logger.Info("success get pvz", "response", pvzList)
 	responser.SendOk(w, http.StatusOK, pvzList)
 }
 
 func (h *Handler) CloseLastReception(w http.ResponseWriter, r *http.Request) {
 	const op = "pvz.Handler.CloseLastReception"
-	h.logger = h.logger.With("op", op)
+	logger := h.logger.With("op", op)
 
 	if r.Context().Value(middleware.RoleInContext) != models.RoleEmployee {
-		h.logger.Error("only for employee")
+		logger.Error("only for employee")
 		responser.SendErr(w, http.StatusForbidden, pvz.ErrNoAccess.Error())
 		return
 	}
 
 	pvzId, err := reader.ReadVarsUUID(r, "pvzId")
 	if err != nil {
-		h.logger.Error("error read var uuid: " + err.Error())
+		logger.Error("error read var uuid: " + err.Error())
 		responser.SendErr(w, http.StatusBadRequest, pvz.ErrBadRequest.Error())
 		return
 	}
 	if pvzId == uuid.Nil {
-		h.logger.Error("pvz id is nil")
+		logger.Error("pvz id is nil")
 		responser.SendErr(w, http.StatusBadRequest, pvz.ErrBadRequest.Error())
 		return
 	}
@@ -186,23 +186,23 @@ func (h *Handler) CloseLastReception(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	h.logger.Info("success close last reception", "response", closedReception)
+	logger.Info("success close last reception", "response", closedReception)
 	responser.SendOk(w, http.StatusOK, closedReception)
 }
 
 func (h *Handler) DeleteLastProduct(w http.ResponseWriter, r *http.Request) {
 	const op = "pvz.Handler.DeleteLastProduct"
-	h.logger = h.logger.With("op", op)
+	logger := h.logger.With("op", op)
 
 	if r.Context().Value(middleware.RoleInContext) != models.RoleEmployee {
-		h.logger.Error("only for employee")
+		logger.Error("only for employee")
 		responser.SendErr(w, http.StatusForbidden, pvz.ErrNoAccess.Error())
 		return
 	}
 
 	pvzId, err := reader.ReadVarsUUID(r, "pvzId")
 	if err != nil {
-		h.logger.Error("error read var uuid: " + err.Error())
+		logger.Error("error read var uuid: " + err.Error())
 		responser.SendErr(w, http.StatusBadRequest, pvz.ErrBadRequest.Error())
 		return
 	}
@@ -222,23 +222,23 @@ func (h *Handler) DeleteLastProduct(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	h.logger.Info("success delete last product")
+	logger.Info("success delete last product")
 	responser.SendOk(w, http.StatusOK, "Товар удален")
 }
 
 func (h *Handler) CreateReception(w http.ResponseWriter, r *http.Request) {
 	op := "pvz.Handler.CreateReception"
-	h.logger = h.logger.With("op", op)
+	logger := h.logger.With("op", op)
 
 	if r.Context().Value(middleware.RoleInContext) != models.RoleEmployee {
-		h.logger.Error("only for employee")
+		logger.Error("only for employee")
 		responser.SendErr(w, http.StatusForbidden, pvz.ErrNoAccess.Error())
 		return
 	}
 
 	receptionData := &models.ReceptionRequest{}
 	if err := reader.ReadRequestData(r, receptionData); err != nil {
-		h.logger.Error("error read request data: " + err.Error())
+		logger.Error("error read request data: " + err.Error())
 		responser.SendErr(w, http.StatusBadRequest, pvz.ErrBadRequest.Error())
 		return
 	}
@@ -254,30 +254,30 @@ func (h *Handler) CreateReception(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	h.logger.Info("success create reception", "response", createdReception)
+	logger.Info("success create reception", "response", createdReception)
 	h.metrics.CreatedReceptionsTotal(fmt.Sprint(createdReception.PvzID))
 	responser.SendOk(w, http.StatusCreated, createdReception)
 }
 
 func (h *Handler) AddProduct(w http.ResponseWriter, r *http.Request) {
 	op := "pvz.Handler.AddProduct"
-	h.logger = h.logger.With("op", op)
+	logger := h.logger.With("op", op)
 
 	if r.Context().Value(middleware.RoleInContext) != models.RoleEmployee {
-		h.logger.Error("only for employee")
+		logger.Error("only for employee")
 		responser.SendErr(w, http.StatusForbidden, pvz.ErrNoAccess.Error())
 		return
 	}
 
 	productData := &models.ProductRequest{}
 	if err := reader.ReadRequestData(r, productData); err != nil {
-		h.logger.Error("error read request data: " + err.Error())
+		logger.Error("error read request data: " + err.Error())
 		responser.SendErr(w, http.StatusBadRequest, pvz.ErrBadRequest.Error())
 		return
 	}
 
 	if productData.PvzID == uuid.Nil {
-		h.logger.Error("pvz id is nil")
+		logger.Error("pvz id is nil")
 		responser.SendErr(w, http.StatusBadRequest, pvz.ErrBadRequest.Error())
 		return
 	}
@@ -294,15 +294,18 @@ func (h *Handler) AddProduct(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	h.logger.Info("success add product", "response", addedProduct)
+	logger.Info("success add product", "response", addedProduct)
 	h.metrics.AddedProductTotal(string(addedProduct.Type))
 	responser.SendOk(w, http.StatusCreated, addedProduct)
 }
 
 func (h *Handler) GetPvzList(w http.ResponseWriter, r *http.Request) {
+	const op = "pvz.Handler.GetPvzList"
+	logger := h.logger.With("op", op)
+
 	list, err := h.grpcClient.GetPVZList(r.Context(), &gen.GetPVZListRequest{})
 	if err != nil {
-		h.logger.Error("error get pvz list: " + err.Error())
+		logger.Error("error get pvz list: " + err.Error())
 		responser.SendErr(w, http.StatusInternalServerError, "internal mainServer error")
 	}
 
@@ -311,7 +314,7 @@ func (h *Handler) GetPvzList(w http.ResponseWriter, r *http.Request) {
 		result[i] = convert(list.Pvzs[i])
 	}
 
-	h.logger.Info("success get pvz list on grpc", "response", result)
+	logger.Info("success get pvz list on grpc", "response", result)
 	responser.SendOk(w, http.StatusOK, result)
 }
 

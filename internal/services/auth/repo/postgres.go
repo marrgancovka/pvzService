@@ -41,7 +41,7 @@ func NewRepository(params Params) *Repository {
 
 func (repo *Repository) GetUserByEmail(ctx context.Context, email string) (*models.Users, error) {
 	const op = "auth.Repository.GetUserByEmail"
-	repo.log = repo.log.With("op", op)
+	logger := repo.log.With("op", op)
 
 	query, args, err := repo.builder.
 		Select("id", "email", "role", "password").
@@ -49,7 +49,7 @@ func (repo *Repository) GetUserByEmail(ctx context.Context, email string) (*mode
 		Where(squirrel.Eq{"email": email}).
 		ToSql()
 	if err != nil {
-		repo.log.Error("build query error: " + err.Error())
+		logger.Error("build query error: " + err.Error())
 		return nil, err
 	}
 
@@ -63,10 +63,10 @@ func (repo *Repository) GetUserByEmail(ctx context.Context, email string) (*mode
 
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			repo.log.Error("user not found")
+			logger.Error("user not found")
 			return nil, auth.ErrUserNotFound
 		}
-		repo.log.Error("failed to get user: " + err.Error())
+		logger.Error("failed to get user: " + err.Error())
 		return nil, err
 	}
 
@@ -75,7 +75,7 @@ func (repo *Repository) GetUserByEmail(ctx context.Context, email string) (*mode
 
 func (repo *Repository) CreateUser(ctx context.Context, user *models.Users) (*models.Users, error) {
 	const op = "auth.Repository.CreateUser"
-	repo.log = repo.log.With("op", op)
+	logger := repo.log.With("op", op)
 
 	query, args, err := repo.builder.
 		Insert("users").
@@ -84,7 +84,7 @@ func (repo *Repository) CreateUser(ctx context.Context, user *models.Users) (*mo
 		Suffix("RETURNING id, email, role, password").
 		ToSql()
 	if err != nil {
-		repo.log.Error("build query error: " + err.Error())
+		logger.Error("build query error: " + err.Error())
 		return nil, err
 	}
 
@@ -97,10 +97,10 @@ func (repo *Repository) CreateUser(ctx context.Context, user *models.Users) (*mo
 	); err != nil {
 		pgErr := &pgconn.PgError{}
 		if errors.As(err, &pgErr) && pgErr.Code == PgErrCodeAlreadyExists {
-			repo.log.Error("user already exists")
+			logger.Error("user already exists")
 			return nil, auth.ErrUserAlreadyExists
 		}
-		repo.log.Error("failed to create user" + err.Error())
+		logger.Error("failed to create user" + err.Error())
 		return nil, err
 	}
 
