@@ -81,8 +81,3 @@ func main() {
 	<-stop
 	app.Stop(ctx)
 }
-
-// TODO: получение пвз
-
-// TODO: написать makefile
-// TODO: написать readme

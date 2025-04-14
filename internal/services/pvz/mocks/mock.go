@@ -118,10 +118,10 @@ func (mr *MockUsecaseMockRecorder) DeleteLastProduct(ctx, pvzId any) *gomock.Cal
 }
 
 // GetPvz mocks base method.
-func (m *MockUsecase) GetPvz(ctx context.Context, startDate, endDate time.Time, limit, page uint64) (*models.Pvz, error) {
+func (m *MockUsecase) GetPvz(ctx context.Context, startDate, endDate time.Time, limit, page uint64) ([]*models.PvzWithReceptions, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetPvz", ctx, startDate, endDate, limit, page)
-	ret0, _ := ret[0].(*models.Pvz)
+	ret0, _ := ret[0].([]*models.PvzWithReceptions)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -246,10 +246,10 @@ func (mr *MockRepositoryMockRecorder) DeleteLastProduct(ctx, pvzId any) *gomock.
 }
 
 // GetPvz mocks base method.
-func (m *MockRepository) GetPvz(ctx context.Context, startDate, endDate time.Time, limit, page uint64) (*models.Pvz, error) {
+func (m *MockRepository) GetPvz(ctx context.Context, startDate, endDate time.Time, limit, page uint64) ([]*models.PvzWithReceptions, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetPvz", ctx, startDate, endDate, limit, page)
-	ret0, _ := ret[0].(*models.Pvz)
+	ret0, _ := ret[0].([]*models.PvzWithReceptions)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

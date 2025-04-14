@@ -142,8 +142,6 @@ func (h *Handler) GetPvzs(w http.ResponseWriter, r *http.Request) {
 
 	pvzList, err := h.usecase.GetPvz(r.Context(), startDate, endDate, limit, page)
 	if err != nil {
-
-		// TODO: switch
 		responser.SendErr(w, http.StatusInternalServerError, err.Error())
 		return
 	}
