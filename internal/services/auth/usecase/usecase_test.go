@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
+	"github.com/marrgancovka/pvzService/internal/pkg/logger"
 	"github.com/marrgancovka/pvzService/internal/services/auth/mocks"
 	"github.com/marrgancovka/pvzService/pkg/hasher"
-	"github.com/marrgancovka/pvzService/pkg/logger"
 	"go.uber.org/mock/gomock"
 	"testing"
 

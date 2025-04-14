@@ -6,6 +6,7 @@ import (
 	"github.com/marrgancovka/pvzService/internal/pkg/db"
 	"github.com/marrgancovka/pvzService/internal/pkg/grpcconn"
 	"github.com/marrgancovka/pvzService/internal/pkg/jwter"
+	"github.com/marrgancovka/pvzService/internal/pkg/logger"
 	"github.com/marrgancovka/pvzService/internal/pkg/metrics"
 	"github.com/marrgancovka/pvzService/internal/pkg/middleware"
 	"github.com/marrgancovka/pvzService/internal/pkg/migrations"
@@ -20,7 +21,6 @@ import (
 	pvzRepository "github.com/marrgancovka/pvzService/internal/services/pvz/repo"
 	pvzUsecase "github.com/marrgancovka/pvzService/internal/services/pvz/usecase"
 	"github.com/marrgancovka/pvzService/pkg/builder"
-	"github.com/marrgancovka/pvzService/pkg/logger"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxevent"
 	"log/slog"
@@ -87,6 +87,4 @@ func main() {
 // TODO: добавить dockerfile + prod.docker-compose + логирование в файл
 // TODO: написать makefile
 // TODO: написать readme
-// TODO: проверить ошибки
-// TODO: добавить нужные константы
 // TODO: линтер
