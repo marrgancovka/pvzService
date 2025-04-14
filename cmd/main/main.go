@@ -84,7 +84,5 @@ func main() {
 
 // TODO: получение пвз
 
-// TODO: добавить dockerfile + prod.docker-compose + логирование в файл
 // TODO: написать makefile
 // TODO: написать readme
-// TODO: линтер

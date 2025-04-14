@@ -87,29 +87,13 @@ func (repo *Repository) CreateReception(ctx context.Context, receptionData *mode
 	}
 	defer tx.Rollback(ctx)
 
-	// TODO: можно переделать
+	_, err = repo.getLastInProgressReceptionID(ctx, tx, receptionData.PvzID)
+	if err == nil {
+		logger.Error("failed to get last in-progress reception id: " + err.Error())
+		return nil, pvz.ErrNoClosedReception
+	}
+
 	query, args, err := repo.builder.
-		Select("1").
-		From("receptions").
-		Where(squirrel.And{squirrel.Eq{"pvz_id": receptionData.PvzID}, squirrel.Eq{"status": models.StatusInProgress}}).
-		ToSql()
-	if err != nil {
-		logger.Error("build query error: " + err.Error())
-		return nil, err
-	}
-
-	haveInProgress := 0
-	err = tx.QueryRow(ctx, query, args...).Scan(&haveInProgress)
-	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
-		logger.Error("failed to check if reception exists: " + err.Error())
-		return nil, err
-	}
-	if haveInProgress == 1 {
-		logger.Error("in this pvz open reception already exists")
-		return nil, pvz.ErrNoOpenReception
-	}
-
-	query, args, err = repo.builder.
 		Insert("receptions").
 		Columns("id", "date_time", "pvz_id", "status").
 		Values(receptionData.ID, receptionData.DateTime, receptionData.PvzID, receptionData.Status).
@@ -315,76 +299,77 @@ func (repo *Repository) getLastInProgressReceptionID(ctx context.Context, tx pgx
 	return receptionID, nil
 }
 
-type PvzWithReceptions struct {
-	smth string
-}
+func (repo *Repository) GetPvz(ctx context.Context, startDate, endDate time.Time, limit, page uint64) ([]*models.PvzWithReceptions, error) {
+	offset := (page - 1) * limit
+	query := `SELECT
+    p.id,
+    p.registration_date,
+    p.city,
+    COALESCE(
+            (
+                SELECT json_agg(
+                               json_build_object(
+                                       'reception', json_build_object(
+                                       'id', r.id,
+                                       'dateTime', r.date_time,
+                                       'pvzId', r.pvz_id,
+                                       'status', r.status
+                                                    ),
+                                       'products', COALESCE((
+                                           SELECT json_agg(
+                                                          json_build_object(
+                                                                  'id', pr.id,
+                                                                  'dateTime', pr.date_time,
+                                                                  'type', pr.type,
+                                                                  'receptionId', pr.reception_id
+                                                          )
+                                                  )
+                                           FROM products pr
+                                           WHERE pr.reception_id = r.id
+                                       ), '[]'::json)
+                               )
+                       )
+                FROM receptions r
+                WHERE r.pvz_id = p.id
+                  AND r.date_time BETWEEN $1 AND $2
+            ),
+            '[]'::json
+    ) AS receptions_json
+FROM pvz p
+ORDER BY registration_date DESC
+LIMIT $3 OFFSET $4;`
 
-func (repo *Repository) GetPvz(ctx context.Context, startDate, endDate time.Time, limit, page uint64) (*models.Pvz, error) {
-	// Подзапрос для продуктов
-	productsSubq, _ := repo.builder.Select(
-		"json_agg(json_build_object("+
-			"'id', id, "+
-			"'dateTime', date_time, "+
-			"'type', type, "+
-			"'receptionId', reception_id"+
-			"))",
-	).
-		From("products").
-		Where("reception_id = r.id").
-		Prefix("COALESCE((", "))").MustSql()
-
-	// Подзапрос для рецепций
-	receptionsSubq, args := repo.builder.Select("json_agg(json_build_object("+
-		"'id', r.id, "+
-		"'dateTime', r.date_time, "+
-		"'pvzId', r.pvz_id, "+
-		"'status', r.status, "+
-		"'products', "+productsSubq+"))").
-		From("receptions r").
-		Where("r.pvz_id = p.id").
-		Where(squirrel.Expr("r.date_time BETWEEN ? AND ?", startDate, endDate)).
-		Prefix("COALESCE((", "))").MustSql()
-
-	// Основной запрос
-	query, _, err := repo.builder.Select(
-		"json_build_object(" +
-			"'id', p.id, " +
-			"'registrationDate', p.registration_date, " +
-			"'city', p.city, " +
-			"'receptions', " + receptionsSubq +
-			") as pvz_data",
-	).
-		From("pvz p").
-		OrderBy("p.registration_date").
-		Limit(limit).
-		Offset((page - 1) * limit).ToSql()
-	if err != nil {
-		return nil, err
-	}
-	repo.log.Debug("query: " + query)
-
-	rows, err := repo.pool.Query(ctx, query, args...)
+	rows, err := repo.pool.Query(ctx, query, startDate, endDate, limit, offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var results []PvzWithReceptions
-
+	var result []*models.PvzWithReceptions
 	for rows.Next() {
-		var jsonData []byte
-		if err := rows.Scan(&jsonData); err != nil {
+		pvzWithReceptions := &models.PvzWithReceptions{}
+		var receptionsJSON []byte
+
+		err = rows.Scan(
+			&pvzWithReceptions.ID,
+			&pvzWithReceptions.RegistrationDate,
+			&pvzWithReceptions.City,
+			&receptionsJSON,
+		)
+		if err != nil {
 			return nil, err
 		}
 
-		var pvzWithReceptions PvzWithReceptions
-		if err := json.Unmarshal(jsonData, &pvzWithReceptions); err != nil {
+		var receptionWithProducts []*models.ReceptionWithProducts
+		if err = json.Unmarshal(receptionsJSON, &receptionWithProducts); err != nil {
 			return nil, err
 		}
 
-		results = append(results, pvzWithReceptions)
+		pvzWithReceptions.Receptions = receptionWithProducts
+
+		result = append(result, pvzWithReceptions)
 	}
-	return nil, nil
+	return result, nil
 }
 
 func (repo *Repository) GetPvzList(ctx context.Context) ([]*models.Pvz, error) {

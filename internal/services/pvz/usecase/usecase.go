@@ -118,7 +118,7 @@ func (uc *Usecase) DeleteLastProduct(ctx context.Context, pvzId uuid.UUID) error
 	return nil
 }
 
-func (uc *Usecase) GetPvz(ctx context.Context, startDate, endDate time.Time, limit, page uint64) (*models.Pvz, error) {
+func (uc *Usecase) GetPvz(ctx context.Context, startDate, endDate time.Time, limit, page uint64) ([]*models.PvzWithReceptions, error) {
 	const op = "pvz.Usecase.GetPvz"
 
 	return uc.repo.GetPvz(ctx, startDate, endDate, limit, page)

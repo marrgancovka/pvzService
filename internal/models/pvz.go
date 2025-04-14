@@ -19,11 +19,11 @@ type Pvz struct {
 	City             City      `json:"city"`
 }
 
-type Pagination struct {
-	StartDate string
-	EndDate   string
-	PageNum   uint64
-	Limit     uint64
+type PvzWithReceptions struct {
+	ID               uuid.UUID                `json:"id"`
+	RegistrationDate time.Time                `json:"registrationDate"`
+	City             City                     `json:"city"`
+	Receptions       []*ReceptionWithProducts `json:"receptions"`
 }
 
 func (city City) IsValid() bool {

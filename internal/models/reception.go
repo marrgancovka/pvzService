@@ -23,6 +23,11 @@ type ReceptionRequest struct {
 	PvzID uuid.UUID `json:"pvzId"`
 }
 
+type ReceptionWithProducts struct {
+	Reception *Reception `json:"reception"`
+	Products  []*Product `json:"products"`
+}
+
 func (receptionType ReceptionType) IsValid() bool {
 	switch receptionType {
 	case StatusInProgress, StatusClose:
