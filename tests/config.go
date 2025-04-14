@@ -6,12 +6,11 @@ import (
 	"github.com/marrgancovka/pvzService/internal/pkg/db"
 	"github.com/marrgancovka/pvzService/internal/pkg/jwter"
 	"github.com/marrgancovka/pvzService/internal/pkg/servers/mainServer"
-	"os"
 	"time"
 )
 
 const (
-	testURL = "localhost:8081"
+	testURL = "0.0.0.0:8085"
 	dbName  = "test_db"
 	dbUser  = "test"
 	dbPass  = "123"
@@ -38,7 +37,7 @@ func Config() config.Out {
 		},
 		Jwt: jwter.Config{
 			ExpirationTime: time.Hour,
-			KeyJWT:         []byte(os.Getenv("JWT_SECRET")),
+			KeyJWT:         []byte("dknsnslk"),
 		},
 	}
 }

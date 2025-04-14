@@ -132,6 +132,21 @@ func (mr *MockUsecaseMockRecorder) GetPvz(ctx, startDate, endDate, limit, page a
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPvz", reflect.TypeOf((*MockUsecase)(nil).GetPvz), ctx, startDate, endDate, limit, page)
 }
 
+// GetPvzList mocks base method.
+func (m *MockUsecase) GetPvzList(ctx context.Context) ([]*models.Pvz, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPvzList", ctx)
+	ret0, _ := ret[0].([]*models.Pvz)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPvzList indicates an expected call of GetPvzList.
+func (mr *MockUsecaseMockRecorder) GetPvzList(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPvzList", reflect.TypeOf((*MockUsecase)(nil).GetPvzList), ctx)
+}
+
 // MockRepository is a mock of Repository interface.
 type MockRepository struct {
 	ctrl     *gomock.Controller
@@ -243,4 +258,19 @@ func (m *MockRepository) GetPvz(ctx context.Context, startDate, endDate time.Tim
 func (mr *MockRepositoryMockRecorder) GetPvz(ctx, startDate, endDate, limit, page any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPvz", reflect.TypeOf((*MockRepository)(nil).GetPvz), ctx, startDate, endDate, limit, page)
+}
+
+// GetPvzList mocks base method.
+func (m *MockRepository) GetPvzList(ctx context.Context) ([]*models.Pvz, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPvzList", ctx)
+	ret0, _ := ret[0].([]*models.Pvz)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPvzList indicates an expected call of GetPvzList.
+func (mr *MockRepositoryMockRecorder) GetPvzList(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPvzList", reflect.TypeOf((*MockRepository)(nil).GetPvzList), ctx)
 }

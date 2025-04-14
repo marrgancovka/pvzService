@@ -9,10 +9,9 @@ import (
 	"github.com/marrgancovka/pvzService/internal/pkg/db"
 	"github.com/marrgancovka/pvzService/internal/pkg/grpcconn"
 	"github.com/marrgancovka/pvzService/internal/pkg/jwter"
-	"github.com/marrgancovka/pvzService/internal/pkg/logger"
+	"github.com/marrgancovka/pvzService/internal/pkg/metrics"
 	"github.com/marrgancovka/pvzService/internal/pkg/middleware"
-	"github.com/marrgancovka/pvzService/internal/pkg/migrations"
-	mainServer2 "github.com/marrgancovka/pvzService/internal/pkg/servers/mainServer"
+	"github.com/marrgancovka/pvzService/internal/pkg/servers/mainServer"
 	"github.com/marrgancovka/pvzService/internal/services/auth"
 	authHandler "github.com/marrgancovka/pvzService/internal/services/auth/delivery/http"
 	authRepository "github.com/marrgancovka/pvzService/internal/services/auth/repo"
@@ -21,12 +20,15 @@ import (
 	pvzHandler "github.com/marrgancovka/pvzService/internal/services/pvz/delivery/http"
 	pvzRepository "github.com/marrgancovka/pvzService/internal/services/pvz/repo"
 	pvzUsecase "github.com/marrgancovka/pvzService/internal/services/pvz/usecase"
+	"github.com/marrgancovka/pvzService/migrations"
 	"github.com/marrgancovka/pvzService/pkg/builder"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxtest"
 	"io"
+	"log/slog"
 	"math/rand"
 	"net/http"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -47,7 +49,11 @@ func (s *PVZIntegrationSuite) SetupSuite() {
 	s.app = fxtest.New(
 		s.T(),
 		fx.Provide(
-			logger.SetupLogger,
+			func() *slog.Logger {
+				return slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+					Level: slog.LevelDebug,
+				}))
+			},
 			Config,
 			jwter.New,
 			builder.SetupBuilder,
@@ -56,7 +62,9 @@ func (s *PVZIntegrationSuite) SetupSuite() {
 
 			grpcconn.Provide,
 
+			fx.Annotate(metrics.New, fx.As(new(metrics.Metrics))),
 			middleware.NewAuthMiddleware,
+			middleware.NewMetricsMiddleware,
 
 			fx.Annotate(jwter.New, fx.As(new(auth.JWTer))),
 			authHandler.NewHandler,
@@ -67,11 +75,11 @@ func (s *PVZIntegrationSuite) SetupSuite() {
 			fx.Annotate(pvzUsecase.NewUsecase, fx.As(new(pvz.Usecase))),
 			fx.Annotate(pvzRepository.NewRepository, fx.As(new(pvz.Repository))),
 
-			mainServer2.NewRouter,
+			mainServer.NewRouter,
 		),
 		fx.Invoke(
 			migrations.RunMigrations,
-			mainServer2.RunServer,
+			mainServer.RunServer,
 		),
 	)
 
@@ -79,14 +87,6 @@ func (s *PVZIntegrationSuite) SetupSuite() {
 	s.client = http.DefaultClient
 	s.app.RequireStart()
 }
-
-//func (s *PVZIntegrationSuite) SetupSuite() {
-//	s.serverURL = testURL
-//	s.client = &http.Client{Timeout: 10 * time.Second}
-//
-//	// Аутентификация перед тестами
-//	s.authenticate()
-//}
 
 func (s *PVZIntegrationSuite) authenticate(role *models.DummyLogin) string {
 	regBody, err := json.Marshal(role)

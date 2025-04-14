@@ -30,7 +30,7 @@ func New(p Params) *JWTer {
 
 func (jwter *JWTer) GenerateJWT(payload *models.TokenPayload) (*models.Token, error) {
 	const op = "jwter.GenerateJWT"
-	jwter.log = jwter.log.With("op", op)
+	logger := jwter.log.With("op", op)
 
 	expTime := time.Now().Add(jwter.cfg.ExpirationTime)
 
@@ -42,7 +42,7 @@ func (jwter *JWTer) GenerateJWT(payload *models.TokenPayload) (*models.Token, er
 
 	tokenStr, err := token.SignedString(jwter.cfg.KeyJWT)
 	if err != nil {
-		jwter.log.Error("JWT Error: " + err.Error())
+		logger.Error("JWT Error: " + err.Error())
 		return nil, err
 	}
 
@@ -51,7 +51,7 @@ func (jwter *JWTer) GenerateJWT(payload *models.TokenPayload) (*models.Token, er
 	}
 
 	if payload.ID == uuid.Nil {
-		jwter.log.Warn("no id in payload")
+		logger.Warn("no id in payload")
 		err = ErrNoID
 	}
 
@@ -60,48 +60,48 @@ func (jwter *JWTer) GenerateJWT(payload *models.TokenPayload) (*models.Token, er
 
 func (jwter *JWTer) ValidateJWT(tokenString string) (*models.TokenPayload, error) {
 	const op = "jwter.ValidateJWT"
-	jwter.log = jwter.log.With("op", op)
+	logger := jwter.log.With("op", op)
 
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			jwter.log.Error("validate jwt: Unexpected signing method")
+			logger.Error("validate jwt: Unexpected signing method")
 			return nil, ErrUnexpectedSigningMethod
 		}
 
 		return jwter.cfg.KeyJWT, nil
 	})
 	if err != nil {
-		jwter.log.Error("parsing token: " + err.Error())
+		logger.Error("parsing token: " + err.Error())
 		return nil, ErrInvalidToken
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		jwter.log.Error("jwt validate: claims error")
+		logger.Error("jwt validate: claims error")
 		return nil, ErrInvalidToken
 	}
 
 	id, err := uuid.Parse(claims["sub"].(string))
 	if err != nil {
-		jwter.log.Error("jwt validate: invalid id")
+		logger.Error("jwt validate: invalid id")
 		return nil, ErrInvalidTokenClaims
 	}
 
 	role, ok := claims["role"].(string)
 	if !ok {
-		jwter.log.Error("jwt validate: invalid role: " + claims["role"].(string))
+		logger.Error("jwt validate: invalid role: " + claims["role"].(string))
 		return nil, ErrInvalidTokenClaims
 	}
 
 	exp, ok := claims["exp"].(float64)
 	if !ok {
-		jwter.log.Error("jwt validate: invalid exp")
+		logger.Error("jwt validate: invalid exp")
 		return nil, ErrInvalidTokenClaims
 	}
 	expTime := time.Unix(int64(exp), 0)
 
 	if expTime.Before(time.Now()) {
-		jwter.log.Error("validate jwt: token expired")
+		logger.Error("validate jwt: token expired")
 		return nil, ErrTokenExpired
 	}
 
@@ -112,7 +112,7 @@ func (jwter *JWTer) ValidateJWT(tokenString string) (*models.TokenPayload, error
 	}
 
 	if id == uuid.Nil {
-		jwter.log.Warn("validate jwt: no id")
+		logger.Warn("validate jwt: no id")
 		err = ErrNoID
 	}
 

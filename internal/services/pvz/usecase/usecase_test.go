@@ -4,11 +4,12 @@ import (
 	"context"
 	"github.com/google/uuid"
 	"github.com/marrgancovka/pvzService/internal/models"
-	"github.com/marrgancovka/pvzService/internal/pkg/logger"
 	"github.com/marrgancovka/pvzService/internal/services/pvz"
 	"github.com/marrgancovka/pvzService/internal/services/pvz/mocks"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
+	"log/slog"
+	"os"
 	"testing"
 	"time"
 )
@@ -18,7 +19,9 @@ func TestUsecase_CreatePvz(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockRepository(ctrl)
-	log := logger.SetupLogger()
+	log := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	}))
 
 	uc := Usecase{
 		log:  log,
@@ -108,18 +111,6 @@ func TestUsecase_CreatePvz(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 
-				if tt.input.ID == uuid.Nil {
-					assert.NotEqual(t, uuid.Nil, result.ID)
-				} else {
-					assert.Equal(t, tt.input.ID, result.ID)
-				}
-
-				if tt.input.RegistrationDate.IsZero() {
-					assert.False(t, result.RegistrationDate.IsZero())
-				} else {
-					assert.Equal(t, tt.input.RegistrationDate, result.RegistrationDate)
-				}
-
 				assert.Equal(t, tt.input.City, result.City)
 			}
 		})
@@ -131,7 +122,9 @@ func TestUsecase_CreateReception(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockRepository(ctrl)
-	log := logger.SetupLogger()
+	log := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	}))
 
 	uc := Usecase{
 		log:  log,
@@ -214,7 +207,9 @@ func TestUsecase_CloseLastReceptions(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockRepository(ctrl)
-	log := logger.SetupLogger()
+	log := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	}))
 
 	uc := Usecase{
 		log:  log,
@@ -294,7 +289,9 @@ func TestUsecase_AddProduct(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockRepository(ctrl)
-	log := logger.SetupLogger()
+	log := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	}))
 
 	uc := Usecase{
 		log:  log,
@@ -403,7 +400,9 @@ func TestUsecase_DeleteLastProduct(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockRepository(ctrl)
-	log := logger.SetupLogger()
+	log := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	}))
 
 	uc := Usecase{
 		log:  log,

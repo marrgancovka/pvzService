@@ -5,10 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
-	"github.com/marrgancovka/pvzService/internal/pkg/logger"
 	"github.com/marrgancovka/pvzService/internal/services/auth/mocks"
 	"github.com/marrgancovka/pvzService/pkg/hasher"
 	"go.uber.org/mock/gomock"
+	"log/slog"
+	"os"
 	"testing"
 
 	"github.com/marrgancovka/pvzService/internal/models"
@@ -22,7 +23,9 @@ func TestUsecase_DummyLogin(t *testing.T) {
 
 	mockRepo := mocks.NewMockRepository(ctrl)
 	mockJWT := mocks.NewMockJWTer(ctrl)
-	log := logger.SetupLogger()
+	log := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	}))
 
 	uc := Usecase{
 		log:  log,
@@ -84,7 +87,9 @@ func TestUsecase_Login(t *testing.T) {
 
 	mockRepo := mocks.NewMockRepository(ctrl)
 	mockJWT := mocks.NewMockJWTer(ctrl)
-	log := logger.SetupLogger()
+	log := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	}))
 	uc := Usecase{
 		log:  log,
 		repo: mockRepo,
@@ -180,7 +185,9 @@ func TestUsecase_Register(t *testing.T) {
 
 	mockRepo := mocks.NewMockRepository(ctrl)
 	mockJWT := mocks.NewMockJWTer(ctrl)
-	log := logger.SetupLogger()
+	log := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	}))
 	uc := Usecase{
 		log:  log,
 		repo: mockRepo,

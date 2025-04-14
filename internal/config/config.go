@@ -14,8 +14,6 @@ import (
 )
 
 type Config struct {
-	//ConfigPath string `env:"CONFIG_PATH" env-default:"config/config.yaml"`
-
 	HTTPServer    mainServer.Config `yaml:"httpServer"`
 	GRPCServer    grpcServer.Config `yaml:"grpcServer"`
 	PvzGRPCClient grpcconn.Config   `yaml:"pvzGRPCClient"`

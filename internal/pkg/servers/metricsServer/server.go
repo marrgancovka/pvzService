@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	metricAddr = "localhost:9000"
+	metricAddr = "0.0.0.0:9000"
 )
 
 type In struct {

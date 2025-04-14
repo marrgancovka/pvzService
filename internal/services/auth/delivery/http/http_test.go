@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"github.com/gorilla/mux"
 	"github.com/marrgancovka/pvzService/internal/models"
-	"github.com/marrgancovka/pvzService/internal/pkg/logger"
 	"github.com/marrgancovka/pvzService/internal/services/auth"
 	authMocks "github.com/marrgancovka/pvzService/internal/services/auth/mocks"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 )
 
@@ -90,9 +91,13 @@ func TestHandler_DummyLogin(t *testing.T) {
 			mockUsecaseEmployee := authMocks.NewMockUsecase(ctrl)
 			tt.mockBehavior(mockUsecaseEmployee, tt.inputRole)
 
+			log := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+				Level: slog.LevelDebug,
+			}))
+
 			handler := &Handler{
 				usecase: mockUsecaseEmployee,
-				logger:  logger.SetupLogger(),
+				logger:  log,
 			}
 
 			router := mux.NewRouter()
@@ -164,7 +169,7 @@ func TestHandler_Login(t *testing.T) {
 				m.EXPECT().Login(gomock.Any(), user).Return("", auth.ErrUserNotFound)
 			},
 			expectedCode: http.StatusBadRequest,
-			expectedBody: `{"msg": "` + auth.ErrIncorrectData.Error() + `"}`,
+			expectedBody: `{"msg": "` + auth.ErrIncorrectPasswordOrEmail.Error() + `"}`,
 		},
 		{
 			name:      "incorrect password",
@@ -174,10 +179,10 @@ func TestHandler_Login(t *testing.T) {
 				Password: "wrong",
 			},
 			mockBehavior: func(m *authMocks.MockUsecase, user *models.Users) {
-				m.EXPECT().Login(gomock.Any(), user).Return("", auth.ErrIncorrectData)
+				m.EXPECT().Login(gomock.Any(), user).Return("", auth.ErrIncorrectPasswordOrEmail)
 			},
 			expectedCode: http.StatusBadRequest,
-			expectedBody: `{"msg": "` + auth.ErrIncorrectData.Error() + `"}`,
+			expectedBody: `{"msg": "` + auth.ErrIncorrectPasswordOrEmail.Error() + `"}`,
 		},
 	}
 
@@ -189,9 +194,13 @@ func TestHandler_Login(t *testing.T) {
 			mockUsecase := authMocks.NewMockUsecase(ctrl)
 			tt.mockBehavior(mockUsecase, tt.inputUser)
 
+			log := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+				Level: slog.LevelDebug,
+			}))
+
 			handler := &Handler{
 				usecase: mockUsecase,
-				logger:  logger.SetupLogger(),
+				logger:  log,
 			}
 
 			router := mux.NewRouter()
@@ -269,7 +278,7 @@ func TestHandler_Register(t *testing.T) {
 			inputUser:    nil,
 			mockBehavior: func(m *authMocks.MockUsecase, user *models.Users) {},
 			expectedCode: http.StatusBadRequest,
-			expectedBody: `{"msg": "ошибка в чтении данных"}`,
+			expectedBody: `{"msg": "` + auth.ErrBadRequest.Error() + `"}`,
 		},
 		{
 			name: "missing required fields",
@@ -294,10 +303,10 @@ func TestHandler_Register(t *testing.T) {
 				Role:     "employee",
 			},
 			mockBehavior: func(m *authMocks.MockUsecase, user *models.Users) {
-				m.EXPECT().Register(gomock.Any(), user).Return("", auth.ErrAlreadyExists)
+				m.EXPECT().Register(gomock.Any(), user).Return("", auth.ErrUserAlreadyExists)
 			},
 			expectedCode: http.StatusBadRequest,
-			expectedBody: `{"msg": "` + auth.ErrAlreadyExists.Error() + `"}`,
+			expectedBody: `{"msg": "` + auth.ErrUserAlreadyExists.Error() + `"}`,
 		},
 		{
 			name: "incorrect role",
@@ -327,9 +336,13 @@ func TestHandler_Register(t *testing.T) {
 			mockUsecase := authMocks.NewMockUsecase(ctrl)
 			tt.mockBehavior(mockUsecase, tt.inputUser)
 
+			log := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+				Level: slog.LevelDebug,
+			}))
+
 			handler := &Handler{
 				usecase: mockUsecase,
-				logger:  logger.SetupLogger(),
+				logger:  log,
 			}
 
 			router := mux.NewRouter()
